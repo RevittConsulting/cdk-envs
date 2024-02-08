@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	viper.SetDefault("port", ":8080")
+	viper.SetDefault("port", 80)
 }

@@ -3,23 +3,31 @@ package main
 import (
 	"context"
 	"github.com/RevittConsulting/cdk-envs/config"
-	"github.com/RevittConsulting/cdk-envs/internal/app"
-	"github.com/go-chi/chi/v5"
+	"github.com/RevittConsulting/cdk-envs/internal/db"
+	"github.com/RevittConsulting/cdk-envs/internal/jsonrpc"
+	"github.com/RevittConsulting/cdk-envs/internal/server"
 	"log"
-	"net/http"
 )
 
 func main() {
-	app.Start(start)
+	server.Start(start)
 }
 
-func start(ctx context.Context, r *chi.Mux) error {
+func start(ctx context.Context, s *server.Server) error {
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		return err
 	}
 
-	log.Fatal(http.ListenAndServe(cfg.Port, r))
+	filePath := "boltdb.db"
+	database := db.New(filePath)
+	defer func() {
+		if err := database.Close(); err != nil {
+			log.Fatalf("Failed to close the database: %v", err)
+		}
+	}()
 
-	return nil
+	go jsonrpc.GetMostRecentBlock()
+
+	return s.Setup(ctx, cfg, database)
 }
