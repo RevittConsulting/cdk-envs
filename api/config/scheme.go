@@ -1,7 +1,7 @@
 package config
 
 type Config struct {
-	Port string
+	Port int
 
 	Cardona CardonaConfig
 }
