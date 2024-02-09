@@ -27,7 +27,7 @@ func NewService(db IChainDb, Config *config.ChainConfig) *Service {
 
 func (s Service) GetChains(context context.Context) (*Chain, error) {
 	var results *Chain
-	file, err := os.Open("mock_data.json")
+	file, err := os.Open("internal/chain/mock_data.json")
 	if err != nil {
 		return nil, err
 	}
