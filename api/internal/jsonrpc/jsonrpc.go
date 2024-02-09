@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/RevittConsulting/cdk-envs/config"
+	"github.com/boltdb/bolt"
+	"io"
 	"net/http"
-	"strconv"
-	"time"
 )
 
 type jsonRPCRequest struct {
@@ -17,59 +17,39 @@ type jsonRPCRequest struct {
 	Id      int           `json:"id"`
 }
 
-func GetMostRecentBlock() {
-	ticker := time.NewTicker(5 * time.Second)
-	defer ticker.Stop()
+type jsonRPCResponse struct {
+	Id      int         `json:"id"`
+	JsonRpc string      `json:"jsonrpc"`
+	Result  interface{} `json:"result"`
+}
 
-	client := &http.Client{}
-	for {
-		select {
-		case <-ticker.C:
-			blockNumber, err := getBlockNumber(client)
-			if err != nil {
-				fmt.Printf("Error getting block number: %v\n", err)
-				return
-			}
+type RPCClient struct {
+	cfg *config.RPCConfig
+	db  *bolt.DB
+}
 
-			fmt.Println(blockNumber)
-		}
+func NewRPCClient(cfg *config.RPCConfig, db *bolt.DB) *RPCClient {
+	return &RPCClient{
+		cfg: cfg,
+		db:  db,
 	}
 }
 
-func getBlockNumber(client *http.Client) (int, error) {
-	requestBody, err := json.Marshal(jsonRPCRequest{
-		JsonRpc: "2.0",
-		Method:  "eth_blockNumber",
-		Params:  []interface{}{},
-		Id:      1,
-	})
+func (c *RPCClient) DoRequest(req *jsonRPCRequest) ([]byte, error) {
+	payloadBytes, err := json.Marshal(req)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	resp, err := client.Post("https://sepolia.publicgoods.network", "application/json", bytes.NewBuffer(requestBody))
+	resp, err := http.Post(c.cfg.Url2, "application/json", bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return 0, err
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
-	var response struct {
-		Result string `json:"result"`
-	}
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		return 0, err
-	}
-
-	blockNumber, err := strconv.ParseInt(response.Result, 0, 64)
-	if err != nil {
-		return 0, err
-	}
-
-	return int(blockNumber), nil
+	return io.ReadAll(resp.Body)
 }
