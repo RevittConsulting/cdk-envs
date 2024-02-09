@@ -10,7 +10,7 @@
     "highestVerifiedBlock": 12344500
   },
   "L2": {
-    "networkName": "Optimism",
+    "networkName": "zkEVM",
     "chainId": "10",
     "datastreamerUrl": "https://datastreamer.optimism.io",
     "latestBatchNumber": 5000,
