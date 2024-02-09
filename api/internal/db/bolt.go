@@ -6,12 +6,12 @@ import (
 )
 
 type Db struct {
-	db *bolt.DB
+	Db *bolt.DB
 }
 
 func New(filePath string) *Db {
 	return &Db{
-		db: openDB(filePath),
+		Db: openDB(filePath),
 	}
 }
 
@@ -24,5 +24,5 @@ func openDB(filePath string) *bolt.DB {
 }
 
 func (b *Db) Close() error {
-	return b.db.Close()
+	return b.Db.Close()
 }

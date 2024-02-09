@@ -7,6 +7,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/go-chi/cors v1.2.1
 	github.com/spf13/viper v1.18.2
+	go.uber.org/zap v1.21.0
 )
 
 require (

@@ -1,9 +1,20 @@
 package config
 
+import "time"
+
 type Config struct {
 	Port int
 
+	RPC     RPCConfig
 	Cardona CardonaConfig
+	Chain   ChainConfig
+}
+
+type RPCConfig struct {
+	Url  string
+	Url2 string
+
+	PollingInterval time.Duration
 }
 
 type CardonaConfig struct {
@@ -19,4 +30,7 @@ type CardonaConfig struct {
 
 	TopicsVerification string
 	TopicsSequence     string
+}
+
+type ChainConfig struct {
 }

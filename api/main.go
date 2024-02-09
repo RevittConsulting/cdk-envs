@@ -19,15 +19,15 @@ func start(ctx context.Context, s *server.Server) error {
 		return err
 	}
 
-	filePath := "boltdb.db"
-	database := db.New(filePath)
+	database := db.New("boltdb.db")
 	defer func() {
 		if err := database.Close(); err != nil {
 			log.Fatalf("Failed to close the database: %v", err)
 		}
 	}()
 
-	go jsonrpc.GetMostRecentBlock()
+	rpcClient := jsonrpc.NewRPCClient(&cfg.RPC, database.Db)
+	go rpcClient.GetMostRecentBlock()
 
-	return s.Setup(ctx, cfg, database)
+	return s.Setup(ctx, cfg, database.Db)
 }

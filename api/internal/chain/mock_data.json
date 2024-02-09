@@ -1,0 +1,20 @@
+{
+  "L1": {
+    "networkName": "Ethereum",
+    "chainId": "1",
+    "rpcUrl": "https://mainnet.infura.io/v3/",
+    "rollupManagerAddress": "0x1234AbcdEF5678GhIJKlMnOpQrStUvWxYZ",
+    "rollupAddress": "0x9876ZyxWVuTsRqPoNmLkJiHgFeDcBa1234",
+    "latestL1BlockNumber": 12345678,
+    "highestSequencedBlock": 12345000,
+    "highestVerifiedBlock": 12344500
+  },
+  "L2": {
+    "networkName": "Optimism",
+    "chainId": "10",
+    "datastreamerUrl": "https://datastreamer.optimism.io",
+    "latestBatchNumber": 5000,
+    "latestBlockNumber": 6000,
+    "datastreamStatus": "active"
+  }
+}

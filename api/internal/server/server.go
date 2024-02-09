@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/config"
-	"github.com/RevittConsulting/cdk-envs/internal/db"
 	"github.com/RevittConsulting/cdk-envs/pkg/atomics"
+	"github.com/boltdb/bolt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"log"
@@ -16,8 +16,10 @@ import (
 )
 
 type Server struct {
+	Config       *config.Config
 	ShuttingDown *atomics.AtomicBool
 	Router       *chi.Mux
+	Deps         *dependencies
 }
 
 func NewServer(sd *atomics.AtomicBool, r *chi.Mux) *Server {
@@ -64,9 +66,14 @@ func Start(startFunc StartFunc) {
 	}()
 }
 
-func (s *Server) Setup(ctx context.Context, cfg *config.Config, db *db.Db) error {
-	err := s.SetupHandlers(ctx)
-	if err != nil {
+func (s *Server) Setup(ctx context.Context, cfg *config.Config, db *bolt.DB) error {
+	s.Config = cfg
+
+	if err := s.SetupDeps(db); err != nil {
+		return err
+	}
+
+	if err := s.SetupHandlers(); err != nil {
 		return err
 	}
 
@@ -77,7 +84,7 @@ func (s *Server) Setup(ctx context.Context, cfg *config.Config, db *db.Db) error
 	}
 
 	go func() {
-		if err = server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("error starting http: %v", err)
 		}
 	}()
@@ -86,9 +93,9 @@ func (s *Server) Setup(ctx context.Context, cfg *config.Config, db *db.Db) error
 
 	<-ctx.Done()
 
-	err = server.Shutdown(context.Background())
-	if err != nil {
-		log.Fatalf("error shutting down the server: %v", err)
+	if err := server.Shutdown(context.Background()); err != nil {
+		log.Fatalf("error shutting down server: %v", err)
 	}
+
 	return nil
 }
