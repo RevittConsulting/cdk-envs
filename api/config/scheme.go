@@ -3,11 +3,13 @@ package config
 import "time"
 
 type Config struct {
-	Port int
+	Port   int
+	DbFile string
 
 	RPC     RPCConfig
 	Cardona CardonaConfig
 	Chain   ChainConfig
+	Buckets BucketsConfig
 }
 
 type RPCConfig struct {
@@ -32,5 +34,6 @@ type CardonaConfig struct {
 	TopicsSequence     string
 }
 
-type ChainConfig struct {
-}
+type ChainConfig struct{}
+
+type BucketsConfig struct{}

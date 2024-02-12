@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/config"
 	"github.com/RevittConsulting/cdk-envs/pkg/atomics"
-	"github.com/boltdb/bolt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"log"
@@ -66,10 +65,10 @@ func Start(startFunc StartFunc) {
 	}()
 }
 
-func (s *Server) Setup(ctx context.Context, cfg *config.Config, db *bolt.DB) error {
+func (s *Server) Setup(ctx context.Context, cfg *config.Config) error {
 	s.Config = cfg
 
-	if err := s.SetupDeps(db); err != nil {
+	if err := s.SetupDeps(); err != nil {
 		return err
 	}
 
