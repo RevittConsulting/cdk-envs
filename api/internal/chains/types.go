@@ -1,12 +1,16 @@
-package chain
+package chains
+
+import "time"
 
 type Chain struct {
-	L1 *L1
-	L2 *L2
+	Id          int    `json:"id" db:"id"`
+	NetworkName string `json:"networkName" db:"network_name"`
+	L1          *L1
+	L2          *L2
+	LastUpdated time.Time `json:"lastUpdated" db:"last_updated"`
 }
 
 type L1 struct {
-	NetworkName           string `json:"networkName" db:"network_name"`
 	ChainId               string `json:"chainId" db:"chain_id"`
 	RpcUrl                string `json:"rpcUrl" db:"rpc_url"`
 	RollupManagerAddress  string `json:"rollupManagerAddress" db:"rollup_manager_address"`
@@ -17,7 +21,6 @@ type L1 struct {
 }
 
 type L2 struct {
-	NetworkName       string `json:"networkName" db:"network_name"`
 	ChainId           string `json:"chainId" db:"chain_id"`
 	DatastreamerUrl   string `json:"datastreamerUrl" db:"datastreamer_url"`
 	LatestBatchNumber int64  `json:"latestBatchNumber" db:"latest_batch_number"`

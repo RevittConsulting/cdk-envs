@@ -1,20 +1,29 @@
 package server
 
 import (
-	"github.com/RevittConsulting/cdk-envs/internal/chain"
+	"fmt"
+	"github.com/RevittConsulting/cdk-envs/internal/buckets"
+	"github.com/RevittConsulting/cdk-envs/internal/buckets/db/mdbx"
+	"github.com/RevittConsulting/cdk-envs/internal/chains"
 	"github.com/RevittConsulting/cdk-envs/internal/health"
-	"github.com/boltdb/bolt"
 	"github.com/go-chi/chi/v5"
 )
 
 type dependencies struct {
-	chain *chain.Service
+	chain   *chains.Service
+	buckets *buckets.Service
 }
 
-func (s *Server) SetupDeps(db *bolt.DB) error {
+func (s *Server) SetupDeps() error {
 	var deps dependencies
-	chainDb := chain.NewDb(db)
-	deps.chain = chain.NewService(chainDb, &s.Config.Chain)
+
+	deps.chain = chains.NewService(&s.Config.Chain)
+
+	mdbxFilePath := fmt.Sprintf("%s/%s", s.Config.DbFile, "chaindata/mdbx.dat")
+	fmt.Println("mdbxFilePath:", mdbxFilePath)
+	mdbxdb := mdbx.New(mdbxFilePath)
+	deps.buckets = buckets.NewService(&s.Config.Buckets, mdbxdb)
+
 	s.Deps = &deps
 	return nil
 }
@@ -22,7 +31,8 @@ func (s *Server) SetupDeps(db *bolt.DB) error {
 func (s *Server) SetupHandlers() error {
 	s.Router.Route("/api/v1", func(r chi.Router) {
 		health.NewHandler(r, s.ShuttingDown)
-		chain.NewHandler(r, s.Deps.chain)
+		chains.NewHandler(r, s.Deps.chain)
+		buckets.NewHandler(r, s.Deps.buckets)
 	})
 	return nil
 }
