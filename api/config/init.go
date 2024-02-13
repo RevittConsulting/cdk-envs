@@ -5,8 +5,8 @@ import (
 )
 
 func init() {
-	viper.SetDefault("port", 80)
-	viper.SetDefault("dbfile", "boltdb.db")
+	viper.SetDefault("port", 8080)
+	viper.SetDefault("dbfile", "mdbx.dat")
 
 	viper.SetDefault("rpc.url", "https://sepolia.drpc.org")
 	viper.SetDefault("rpc.url2", "https://rpc2.sepolia.org")
