@@ -1,26 +1,30 @@
-FROM golang:1.20 as base
+# syntax = docker/dockerfile:1.2
+FROM docker.io/library/golang:1.20-alpine3.17 AS base
 
-RUN apt-get update && apt-get -y install git
+RUN apk --no-cache add build-base linux-headers git bash ca-certificates libstdc++
 
 RUN mkdir /api
-
 WORKDIR /api
 
-COPY go.mod .
-
-COPY go.sum .
+ADD go.mod .
+ADD go.sum .
 
 RUN go mod download
 
 
 FROM base as builder
+WORKDIR /api
 
-COPY . .
+RUN ls
 
-RUN CGO_ENABLED=0 go build -o apiexecutable ./cmd/api/main.go
+ADD . .
+
+RUN ls
+
+RUN go build -o apiexecutable ./cmd/api
 
 
-FROM scratch
+FROM docker.io/library/alpine:3.17
 
 COPY --from=builder /api/apiexecutable /apiexecutable
 
