@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"go.uber.org/zap"
+	"io"
 	"log"
 	"net/http"
 )
@@ -16,6 +17,20 @@ type ErrResponse struct {
 type Response struct {
 	Data      interface{} `json:"data"`
 	FromCache bool        `json:"from_cache"`
+}
+
+func ReadJSON(r *http.Request, v interface{}) error {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, v)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func WriteJSON(w http.ResponseWriter, v interface{}) {

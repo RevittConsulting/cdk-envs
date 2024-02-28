@@ -14,13 +14,18 @@ type MDBX struct {
 	env *mdbx.Env
 }
 
-func New() *MDBX {
+func New(filePath string) *MDBX {
 	env, err := mdbx.NewEnv()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	err = env.SetOption(mdbx.OptMaxDB, 200)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = env.Open(filePath, mdbx.NoTLS|mdbx.Readonly, 0444)
 	if err != nil {
 		log.Fatal(err)
 	}

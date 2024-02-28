@@ -23,6 +23,7 @@ func NewHandler(r chi.Router, s *Service) *Handler {
 func (h *Handler) SetupRoutes(router chi.Router) {
 	fmt.Println("setting up routes for buckets...")
 	router.Group(func(r chi.Router) {
+		r.Post("/buckets", h.ChangeDB)
 		r.Get("/buckets", h.listBuckets)
 		r.Get("/buckets/{bucketName}/pages/{pageNum}/{pageLen}", h.getPage)
 		r.Get("/buckets/{bucketName}/count", h.keysCount)
@@ -31,6 +32,23 @@ func (h *Handler) SetupRoutes(router chi.Router) {
 		r.Get("/buckets/{bucketName}/keys/{key}", h.lookupByKey)
 		r.Get("/buckets/{bucketName}/values/{value}", h.searchByValue)
 	})
+}
+
+func (h *Handler) ChangeDB(w http.ResponseWriter, r *http.Request) {
+	req := &DBRequest{}
+	err := utils.ReadJSON(r, req)
+	if err != nil {
+		utils.WriteErr(w, err, http.StatusBadRequest)
+		return
+	}
+
+	if err = h.s.ChangeDB(req.DbFile); err != nil {
+		utils.WriteErr(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	utils.WriteJSON(w, map[string]string{"message": "Database changed"})
+
 }
 
 func (h *Handler) listBuckets(w http.ResponseWriter, r *http.Request) {

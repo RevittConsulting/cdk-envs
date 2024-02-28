@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/config"
+	"github.com/RevittConsulting/cdk-envs/internal/buckets/db/mdbx"
 	"github.com/RevittConsulting/cdk-envs/internal/types"
 	"github.com/RevittConsulting/cdk-envs/pkg/utils"
 	"strconv"
@@ -30,6 +31,19 @@ func NewService(Config *config.BucketsConfig, Db IDatabase) *Service {
 		Config: Config,
 		Db:     Db,
 	}
+}
+
+func (s Service) ChangeDB(filePath string) error {
+	mdbxdb := mdbx.New(filePath)
+	buckets := NewService(s.Config, mdbxdb)
+
+	if err := s.Db.Close(); err != nil {
+		return err
+	}
+
+	s.Db = buckets.Db
+
+	return nil
 }
 
 func (s Service) ListBuckets() ([]string, error) {

@@ -3,8 +3,9 @@ package config
 import "time"
 
 type Config struct {
-	Port   int
-	DbFile string
+	Port         int
+	DbFile       string
+	ShutdownTime int
 
 	RPC     RPCConfig
 	Cardona CardonaConfig
