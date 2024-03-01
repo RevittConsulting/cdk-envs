@@ -1,8 +1,9 @@
 default: all
 
-all: app
+all: cdk-envs
 
-.PHONY: app
-app:
+.PHONY: cdk-envs
+cdk-envs:
 	@echo "Building APP"
+	@export DATA_DIR_HOST=$(data) ; \
 	docker compose up -d

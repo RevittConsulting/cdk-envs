@@ -1,6 +1,9 @@
 package utils
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"math/big"
+)
 
 func BytesToUint64(b []byte) uint64 {
 	if len(b) < 8 {
@@ -13,6 +16,10 @@ func Uint64ToBytes(i uint64) []byte {
 	buf := make([]byte, 8)
 	binary.BigEndian.PutUint64(buf, i)
 	return buf
+}
+
+func BigIntToBytes(i *big.Int) []byte {
+	return i.Bytes()
 }
 
 func BytesEqual(a, b []byte) bool {

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Nav from "@/components/nav";
+import { BucketProvider } from "@/context/bucket-context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,16 +21,18 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem={true}
-            themes={["light", "dark"]}
-            disableTransitionOnChange
-          >
-          <Nav />
-          {children}
-          </ThemeProvider>
-        </body>
+          attribute="class"
+          defaultTheme="system"
+          enableSystem={true}
+          themes={["light", "dark"]}
+          disableTransitionOnChange
+        >
+          <BucketProvider>
+            <Nav />
+            {children}
+          </BucketProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

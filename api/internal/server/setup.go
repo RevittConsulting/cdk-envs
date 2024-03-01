@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"github.com/RevittConsulting/cdk-envs/internal/buckets"
 	"github.com/RevittConsulting/cdk-envs/internal/buckets/db/mdbx"
 	"github.com/RevittConsulting/cdk-envs/internal/chains"
@@ -20,8 +19,10 @@ func (s *Server) SetupDeps() error {
 
 	deps.chain = chains.NewService(&s.Config.Chain)
 
-	mdbxFilePath := fmt.Sprintf("%s", "chaindata/mdbx.dat")
-	mdbxdb := mdbx.New(mdbxFilePath)
+	mdbxdb := mdbx.New()
+	//if err := mdbxdb.Open("chaindata/mdbx.dat"); err != nil {
+	//	return err
+	//}
 	deps.buckets = buckets.NewService(&s.Config.Buckets, mdbxdb)
 
 	s.Deps = &deps
