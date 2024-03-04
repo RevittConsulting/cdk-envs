@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/config"
+	"github.com/RevittConsulting/cdk-envs/internal/chains/chain_services"
 	"github.com/RevittConsulting/cdk-envs/pkg/atomics"
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/sync/errgroup"
@@ -16,11 +17,12 @@ import (
 )
 
 type Server struct {
-	Config       *config.Config
-	ShuttingDown *atomics.AtomicBool
-	Router       *chi.Mux
-	Deps         *dependencies
-	Signal       chan os.Signal
+	Config        *config.Config
+	ShuttingDown  *atomics.AtomicBool
+	Router        *chi.Mux
+	Deps          *dependencies
+	Signal        chan os.Signal
+	ChainServices *chain_services.Registry
 }
 
 func (s *Server) Init() error {
@@ -43,6 +45,12 @@ func (s *Server) Run(ctx context.Context) error {
 		return err
 	}
 
+	go func() {
+		if err := s.ChainServices.StartServices([]string{chain_services.Logs}); err != nil {
+			cancel()
+		}
+	}()
+
 	port := fmt.Sprintf(":%v", s.Config.Port)
 	server := http.Server{
 		Addr:    port,
@@ -52,6 +60,9 @@ func (s *Server) Run(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 	g.Go(func() error {
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			if err = s.ChainServices.StopAll(); err != nil {
+				return err
+			}
 			return err
 		}
 		return nil
@@ -73,6 +84,10 @@ func (s *Server) Run(ctx context.Context) error {
 	fmt.Println("server started on port " + port)
 
 	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	if err := s.ChainServices.StopAll(); err != nil {
 		return err
 	}
 

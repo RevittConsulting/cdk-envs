@@ -7,10 +7,10 @@ type Config struct {
 	DbFile       string
 	ShutdownTime int
 
-	RPC     RPCConfig
-	Cardona CardonaConfig
-	Chain   ChainConfig
-	Buckets BucketsConfig
+	RPC RPCConfig
+
+	Chains  *Chains
+	Buckets *BucketsConfig
 }
 
 type RPCConfig struct {
@@ -20,7 +20,14 @@ type RPCConfig struct {
 	PollingInterval time.Duration
 }
 
-type CardonaConfig struct {
+type Chains struct {
+	Chains map[string]*ChainConfig
+}
+
+type ChainConfig struct {
+	BlockExplorer  string
+	CurrencySymbol string
+
 	L1ChainId int
 	L1RpcUrl  string
 
@@ -34,7 +41,5 @@ type CardonaConfig struct {
 	TopicsVerification string
 	TopicsSequence     string
 }
-
-type ChainConfig struct{}
 
 type BucketsConfig struct{}

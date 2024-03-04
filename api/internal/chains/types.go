@@ -16,8 +16,8 @@ type L1 struct {
 	RollupManagerAddress  string `json:"rollupManagerAddress" db:"rollup_manager_address"`
 	RollupAddress         string `json:"rollupAddress" db:"rollup_address"`
 	LatestL1BlockNumber   int64  `json:"latestL1BlockNumber" db:"latest_l1_block_number"`
-	HighestSequencedBlock int64  `json:"highestSequencedBlock" db:"highest_sequenced_block"`
-	HighestVerifiedBlock  int64  `json:"highestVerifiedBlock" db:"highest_verified_block"`
+	HighestSequencedBatch int64  `json:"highestSequencedBatch" db:"highest_sequenced_batch"`
+	HighestVerifiedBatch  int64  `json:"highestVerifiedBatch" db:"highest_verified_batch"`
 }
 
 type L2 struct {

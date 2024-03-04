@@ -3,30 +3,37 @@ package config
 import (
 	"fmt"
 	"github.com/spf13/viper"
-	"os"
 	"strings"
 )
 
 func LoadConfig() (*Config, error) {
-	path := getConfigPath(os.Getenv("APP_CONFIG"))
-	v, err := loadConfig(path, "yaml")
+	cfg := &Config{}
+
+	v, err := loadConfig("chains", "yaml")
 	if err != nil {
 		return nil, err
 	}
-	cfg, err := parseConfig(v)
+
+	err = parseConfig(cfg, v)
 	if err != nil {
 		return nil, err
 	}
+
+	chainCfg := &Chains{}
+	err = parseConfig(chainCfg, v)
+	if err != nil {
+		return nil, err
+	}
+	cfg.Chains = chainCfg
 
 	return cfg, nil
 }
 
-func parseConfig(v *viper.Viper) (*Config, error) {
-	cfg := &Config{}
+func parseConfig(cfg interface{}, v *viper.Viper) error {
 	if err := v.Unmarshal(cfg); err != nil {
-		return nil, fmt.Errorf("unmarshal config: %w", err)
+		return fmt.Errorf("unmarshal config: %w", err)
 	}
-	return cfg, nil
+	return nil
 }
 
 func loadConfig(filename, fileType string) (*viper.Viper, error) {
@@ -44,12 +51,4 @@ func loadConfig(filename, fileType string) (*viper.Viper, error) {
 	}
 
 	return viper.GetViper(), nil
-}
-
-func getConfigPath(env string) string {
-	if env == "cardona" {
-		return "config/hermez-cardona"
-	} else {
-		return "config/hermez-dev"
-	}
 }
