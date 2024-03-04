@@ -6,6 +6,7 @@ import (
 	"github.com/RevittConsulting/cdk-envs/internal/chains"
 	"github.com/RevittConsulting/cdk-envs/internal/health"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 )
 
 type dependencies struct {
@@ -18,9 +19,10 @@ func (s *Server) SetupDeps() error {
 
 	deps.chain = chains.NewService(&s.Config.Chain)
 
-	//mdbxFilePath := fmt.Sprintf("%s", "chaindata/mdbx.dat")
-	//fmt.Println("mdbxFilePath:", mdbxFilePath)
 	mdbxdb := mdbx.New()
+	//if err := mdbxdb.Open("chaindata/mdbx.dat"); err != nil {
+	//	return err
+	//}
 	deps.buckets = buckets.NewService(&s.Config.Buckets, mdbxdb)
 
 	s.Deps = &deps
@@ -28,6 +30,20 @@ func (s *Server) SetupDeps() error {
 }
 
 func (s *Server) SetupHandlers() error {
+
+	s.Router = chi.NewRouter()
+
+	cors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		ExposedHeaders:   []string{"*"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	})
+
+	s.Router.Use(cors.Handler)
+
 	s.Router.Route("/api/v1", func(r chi.Router) {
 		health.NewHandler(r, s.ShuttingDown)
 		chains.NewHandler(r, s.Deps.chain)

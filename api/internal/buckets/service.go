@@ -4,13 +4,18 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/config"
+	"github.com/RevittConsulting/cdk-envs/internal/buckets/db/mdbx"
 	"github.com/RevittConsulting/cdk-envs/internal/types"
 	"github.com/RevittConsulting/cdk-envs/pkg/utils"
-	"strconv"
+	"io/fs"
+	"math/big"
+	"os"
+	"path/filepath"
 	"strings"
 )
 
 type IDatabase interface {
+	Open(path string) error
 	Close() error
 	ListBuckets() ([]string, error)
 	CountKeys(bucketName string) (uint64, error)
@@ -32,7 +37,48 @@ func NewService(Config *config.BucketsConfig, Db IDatabase) *Service {
 	}
 }
 
-func (s Service) ListBuckets() ([]string, error) {
+func (s *Service) ChangeDB(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fmt.Errorf("database file does not exist at path: %s", path)
+	}
+
+	if err := s.Db.Close(); err != nil {
+		return err
+	}
+
+	newEnv := mdbx.New()
+	if err := newEnv.Open(path); err != nil {
+		return err
+	}
+
+	s.Db = newEnv
+
+	return nil
+}
+
+func (s *Service) ListDataSource() ([]string, error) {
+	dataDir := os.Getenv("DATA_DIR")
+
+	var files []string
+
+	err := filepath.Walk(dataDir, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() && filepath.Ext(path) == ".dat" {
+			files = append(files, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+func (s *Service) ListBuckets() ([]string, error) {
 	buckets, err := s.Db.ListBuckets()
 	if err != nil {
 		return nil, err
@@ -41,7 +87,15 @@ func (s Service) ListBuckets() ([]string, error) {
 	return buckets, nil
 }
 
-func (s Service) GetPage(name string, num int, pageLen int) ([]types.KeyValuePairString, error) {
+func (s *Service) KeysCount(name string) (uint64, error) {
+	count, err := s.Db.CountKeys(name)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (s *Service) GetPage(name string, num int, pageLen int) ([]types.KeyValuePairString, error) {
 	foundData, err := s.Db.Read(name, uint64(pageLen), uint64(num))
 	if err != nil {
 		return nil, err
@@ -56,15 +110,7 @@ func (s Service) GetPage(name string, num int, pageLen int) ([]types.KeyValuePai
 	return data, nil
 }
 
-func (s Service) KeysCount(name string) (uint64, error) {
-	count, err := s.Db.CountKeys(name)
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
-}
-
-func (s Service) KeysCountLength(name string, length uint64) (uint64, []string, error) {
+func (s *Service) KeysCountLength(name string, length uint64) (uint64, []string, error) {
 	count, keys, err := s.Db.CountKeysOfLength(name, length)
 	if err != nil {
 		return 0, nil, err
@@ -72,29 +118,35 @@ func (s Service) KeysCountLength(name string, length uint64) (uint64, []string, 
 	return count, keys, nil
 }
 
-func (s Service) LookupByKey(bucketName string, searchKey string) ([]byte, error) {
+func (s *Service) LookupByKey(bucketName string, searchKey string) ([]byte, error) {
 	var foundValue []byte
 	if strings.HasPrefix(searchKey, "0x") {
 		searchKey = searchKey[2:]
-		str, err := hex.DecodeString(searchKey)
+		bytes, err := hex.DecodeString(searchKey)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return nil, err
 		}
-		foundValue, _ = s.Db.FindByKey(bucketName, str)
+		foundValue, _ = s.Db.FindByKey(bucketName, bytes)
 	} else {
-		num, err := strconv.ParseUint(searchKey, 10, 64)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return nil, err
+		num := new(big.Int)
+		num, ok := num.SetString(searchKey, 16)
+		if !ok {
+			return nil, fmt.Errorf("error parsing the number")
 		}
-		skuint := utils.Uint64ToBytes(num)
-		foundValue, _ = s.Db.FindByKey(bucketName, skuint)
+		//num, err := strconv.ParseUint(searchKey, 10, 64)
+		//if err != nil {
+		//	fmt.Println("Error:", err)
+		//	return nil, err
+		//}
+		//skuint := utils.Uint64ToBytes(num)
+		bytes := utils.BigIntToBytes(num)
+		foundValue, _ = s.Db.FindByKey(bucketName, bytes)
 	}
 	return foundValue, nil
 }
 
-func (s Service) SearchByValue(bucketName string, num uint64) ([]string, error) {
+func (s *Service) SearchByValue(bucketName string, num uint64) ([]string, error) {
 	foundKeys, _ := s.Db.FindByValue(bucketName, utils.Uint64ToBytes(num))
 	hexKeys := make([]string, 0)
 

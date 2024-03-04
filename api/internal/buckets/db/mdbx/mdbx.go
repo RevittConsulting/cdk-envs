@@ -6,7 +6,6 @@ import (
 	"github.com/RevittConsulting/cdk-envs/internal/types"
 	"github.com/RevittConsulting/cdk-envs/pkg/utils"
 	"github.com/erigontech/mdbx-go/mdbx"
-
 	"log"
 )
 
@@ -30,8 +29,8 @@ func New() *MDBX {
 	}
 }
 
-func (m *MDBX) Open(filePath string) error {
-	return m.env.Open(filePath, mdbx.NoTLS|mdbx.Readonly, 0444)
+func (m *MDBX) Open(path string) error {
+	return m.env.Open(path, mdbx.NoTLS|mdbx.Readonly, 0444)
 }
 
 func (m *MDBX) Close() error {

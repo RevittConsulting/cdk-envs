@@ -20,7 +20,6 @@ const Nav = () => {
             alt="logo"
             width={40}
             height={40}
-            className="object-contain rounded-lg mx-auto height-auto"
             priority
           />
         </Link>

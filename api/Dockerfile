@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1.2
-FROM docker.io/library/golang:1.20-alpine3.17 AS base
+FROM docker.io/library/golang:1.22.0-alpine3.19 AS base
 
 RUN apk --no-cache add build-base linux-headers git bash ca-certificates libstdc++
 
@@ -24,10 +24,10 @@ RUN ls
 RUN go build -o apiexecutable ./cmd/api
 
 
-FROM docker.io/library/alpine:3.17
+FROM docker.io/library/alpine:3.19
 
 COPY --from=builder /api/apiexecutable /apiexecutable
 
 EXPOSE 8080
 
-CMD [ "/apiexecutable" ]
+CMD [ "/apiexecutable", "serve" ]

@@ -2,16 +2,17 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/config"
 	"github.com/RevittConsulting/cdk-envs/pkg/atomics"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/cors"
-	"log"
+	"golang.org/x/sync/errgroup"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 type Server struct {
@@ -19,81 +20,73 @@ type Server struct {
 	ShuttingDown *atomics.AtomicBool
 	Router       *chi.Mux
 	Deps         *dependencies
+	Signal       chan os.Signal
 }
 
-func NewServer(sd *atomics.AtomicBool, r *chi.Mux) *Server {
-	return &Server{
-		ShuttingDown: sd,
-		Router:       r,
-	}
-}
-
-type StartFunc func(ctx context.Context, s *Server) error
-
-func Start(startFunc StartFunc) {
-	ctx, cancel := context.WithCancel(context.Background())
-
+func (s *Server) Init() error {
 	var shutdown atomics.AtomicBool
 	shutdown.Set(false)
-
-	r := chi.NewRouter()
-
-	cors := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
-		AllowedHeaders:   []string{"*"},
-		ExposedHeaders:   []string{"*"},
-		AllowCredentials: true,
-		MaxAge:           300,
-	})
-
-	r.Use(cors.Handler)
-
-	s := NewServer(&shutdown, r)
-
-	err := startFunc(ctx, s)
-	if err != nil {
-		log.Fatal("failed to start server")
-	}
+	s.ShuttingDown = &shutdown
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP)
+	s.Signal = c
 
-	go func() {
-		<-c
-		cancel()
-	}()
+	return nil
 }
 
-func (s *Server) Setup(ctx context.Context, cfg *config.Config) error {
-	s.Config = cfg
+func (s *Server) Run(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
+	if err := s.Setup(); err != nil {
+		return err
+	}
+
+	port := fmt.Sprintf(":%v", s.Config.Port)
+	server := http.Server{
+		Addr:    port,
+		Handler: s.Router,
+	}
+
+	g, ctx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return err
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		select {
+		case <-s.Signal:
+			s.ShuttingDown.Set(true)
+			time.Sleep(time.Duration(s.Config.ShutdownTime) * time.Second)
+			cancel()
+			return server.Shutdown(context.Background())
+		case <-ctx.Done():
+			s.ShuttingDown.Set(true)
+			return server.Shutdown(context.Background())
+		}
+	})
+
+	fmt.Println("server started on port " + port)
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	fmt.Println("server gracefully stopped")
+	return nil
+}
+
+func (s *Server) Setup() error {
 	if err := s.SetupDeps(); err != nil {
 		return err
 	}
 
 	if err := s.SetupHandlers(); err != nil {
 		return err
-	}
-
-	port := fmt.Sprintf(":%v", cfg.Port)
-	server := http.Server{
-		Addr:    port,
-		Handler: s.Router,
-	}
-
-	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("error starting http: %v", err)
-		}
-	}()
-
-	log.Printf("server started on port %v", port)
-
-	<-ctx.Done()
-
-	if err := server.Shutdown(context.Background()); err != nil {
-		log.Fatalf("error shutting down server: %v", err)
 	}
 
 	return nil
