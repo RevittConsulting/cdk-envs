@@ -6,13 +6,15 @@ import (
 	"github.com/RevittConsulting/cdk-envs/internal/chains"
 	"github.com/RevittConsulting/cdk-envs/internal/chains/chain_services"
 	"github.com/RevittConsulting/cdk-envs/internal/health"
+	"github.com/RevittConsulting/cdk-envs/internal/ws"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 )
 
 type dependencies struct {
-	chain   *chains.Service
-	buckets *buckets.Service
+	chain   *chains.HttpService
+	buckets *buckets.HttpService
+	ws      *ws.Service
 }
 
 func (s *Server) SetupDeps() error {
@@ -22,19 +24,26 @@ func (s *Server) SetupDeps() error {
 	registry := chain_services.NewRegistry()
 
 	// block service (gets most recent block)
-	blockService := chain_services.NewBlockService(&s.Config.RPC)
+	blockService := chain_services.NewBlockService(s.Config.RPC)
 	registry.Register(chain_services.Block, blockService)
 
 	// logs service
-	logsService := chain_services.NewLogsService(&s.Config.RPC)
+	logsService := chain_services.NewLogsService(s.Config.Chains, s.Config.RPC)
 	registry.Register(chain_services.Logs, logsService)
 
+	// runtime (for starting and stopping go services via http)
+	run := chain_services.NewRuntime(registry)
+
 	// chain http service
-	deps.chain = chains.NewService(s.Config.Chains, registry)
+	deps.chain = chains.NewService(s.Config.Chains, registry, run)
 
 	// datacryp
 	mdbxdb := mdbx.New()
 	deps.buckets = buckets.NewService(s.Config.Buckets, mdbxdb)
+
+	// websocket
+	wsService := ws.NewService(run)
+	deps.ws = wsService
 
 	s.Deps = &deps
 	s.ChainServices = registry
@@ -60,6 +69,7 @@ func (s *Server) SetupHandlers() error {
 		health.NewHandler(r, s.ShuttingDown)
 		chains.NewHandler(r, s.Deps.chain)
 		buckets.NewHandler(r, s.Deps.buckets)
+		ws.NewHandler(r, s.Deps.ws)
 	})
 	return nil
 }

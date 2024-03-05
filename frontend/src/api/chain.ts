@@ -13,3 +13,16 @@ export const getChains = async (): Promise<Chain[]> => {
   }
   return [];
 };
+
+export const restartServices = async (serviceName: string) => {
+  try {
+    const response = await axiosInstance.post("/chains", { serviceName });
+    if (response.status === 200) {
+      return response.data;
+    }
+  } catch (error) {
+    console.error(error);
+    return {};
+  }
+  return {};
+};

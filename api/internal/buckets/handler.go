@@ -8,19 +8,19 @@ import (
 	"strconv"
 )
 
-type Handler struct {
-	s *Service
+type HttpHandler struct {
+	s *HttpService
 }
 
-func NewHandler(r chi.Router, s *Service) *Handler {
-	h := &Handler{
+func NewHandler(r chi.Router, s *HttpService) *HttpHandler {
+	h := &HttpHandler{
 		s: s,
 	}
 	h.SetupRoutes(r)
 	return h
 }
 
-func (h *Handler) SetupRoutes(router chi.Router) {
+func (h *HttpHandler) SetupRoutes(router chi.Router) {
 	fmt.Println("setting up routes for buckets...")
 	router.Group(func(r chi.Router) {
 		r.Post("/buckets", h.ChangeDB)
@@ -35,7 +35,7 @@ func (h *Handler) SetupRoutes(router chi.Router) {
 	})
 }
 
-func (h *Handler) ChangeDB(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) ChangeDB(w http.ResponseWriter, r *http.Request) {
 	req := &DBRequest{}
 	err := utils.ReadJSON(r, req)
 	if err != nil {
@@ -51,7 +51,7 @@ func (h *Handler) ChangeDB(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (h *Handler) listDataSource(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) listDataSource(w http.ResponseWriter, r *http.Request) {
 	dataSource, err := h.s.ListDataSource()
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
@@ -60,7 +60,7 @@ func (h *Handler) listDataSource(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, dataSource)
 }
 
-func (h *Handler) listBuckets(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) listBuckets(w http.ResponseWriter, r *http.Request) {
 	buckets, err := h.s.ListBuckets()
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
@@ -70,7 +70,7 @@ func (h *Handler) listBuckets(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, buckets)
 }
 
-func (h *Handler) keysCount(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) keysCount(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 
 	count, err := h.s.KeysCount(bucketName)
@@ -84,7 +84,7 @@ func (h *Handler) keysCount(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, response)
 }
 
-func (h *Handler) getPage(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) getPage(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 	pageNum, err := strconv.Atoi(chi.URLParam(r, "pageNum"))
 	if err != nil {
@@ -106,7 +106,7 @@ func (h *Handler) getPage(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, pages)
 }
 
-func (h *Handler) countLength(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) countLength(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 	length, err := strconv.ParseUint(chi.URLParam(r, "length"), 10, 64)
 	if err != nil {
@@ -125,7 +125,7 @@ func (h *Handler) countLength(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, response)
 }
 
-func (h *Handler) keysCountLength(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) keysCountLength(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 	length, err := strconv.ParseUint(chi.URLParam(r, "length"), 10, 64)
 	if err != nil {
@@ -144,7 +144,7 @@ func (h *Handler) keysCountLength(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, response)
 }
 
-func (h *Handler) lookupByKey(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) lookupByKey(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 	searchKey := chi.URLParam(r, "key")
 
@@ -164,7 +164,7 @@ func (h *Handler) lookupByKey(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, response)
 }
 
-func (h *Handler) searchByValue(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) searchByValue(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 	searchValue := chi.URLParam(r, "value")
 
