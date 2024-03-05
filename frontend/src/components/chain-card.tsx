@@ -17,10 +17,10 @@ export default function ChainCard({ chain }: { chain: Chain }) {
 
   return (
     chain && (
-      <div className="p-4 rounded-lg border w-[26vw]">
+      <div className="p-4 rounded-lg border w-[30vw]">
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold">{chain.networkName}</h1> <span className="text-primary">(Sepolia)</span>
+            <h1 className="text-lg font-semibold">{chain.networkName}</h1><span className="text-primary">(Sepolia)</span>
           </div>
           <div>
             <h2 className="text-sm font-semibold pb-2">L1</h2>
