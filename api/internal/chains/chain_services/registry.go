@@ -3,6 +3,7 @@ package chain_services
 const (
 	Block = "block"
 	Logs  = "logs"
+	Batch = "batch"
 )
 
 type IService interface {
@@ -52,6 +53,9 @@ func (r *Registry) StopAll() error {
 	return nil
 }
 
-func (r *Registry) GetService(name string) IService {
-	return r.services[name]
+func (r *Registry) GetService(name string) (IService, error) {
+	if _, ok := r.services[name]; !ok {
+		return nil, ErrServiceNotFound
+	}
+	return r.services[name], nil
 }

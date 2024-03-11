@@ -7,26 +7,28 @@ import (
 	"net/http"
 )
 
-type Handler struct {
-	s *Service
+type HttpHandler struct {
+	s *HttpService
 }
 
-func NewHandler(r chi.Router, s *Service) *Handler {
-	h := &Handler{
+func NewHandler(r chi.Router, s *HttpService) *HttpHandler {
+	h := &HttpHandler{
 		s: s,
 	}
 	h.SetupRoutes(r)
 	return h
 }
 
-func (h *Handler) SetupRoutes(router chi.Router) {
+func (h *HttpHandler) SetupRoutes(router chi.Router) {
 	fmt.Println("setting up routes for chains...")
 	router.Group(func(r chi.Router) {
 		r.Get("/chains", h.GetChains)
+		r.Post("/chains", h.ChangeChainService)
+		r.Get("/chains/stop", h.StopServices)
 	})
 }
 
-func (h *Handler) GetChains(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) GetChains(w http.ResponseWriter, r *http.Request) {
 	chain, err := h.s.GetChains(r.Context())
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
@@ -34,4 +36,30 @@ func (h *Handler) GetChains(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, chain)
+}
+
+func (h *HttpHandler) ChangeChainService(w http.ResponseWriter, r *http.Request) {
+	req := &ChainRequest{}
+	err := utils.ReadJSON(r, req)
+	if err != nil {
+		utils.WriteErr(w, err, http.StatusBadRequest)
+		return
+	}
+	chain, err := h.s.ChangeChainService(r.Context(), req.ServiceName)
+	if err != nil {
+		utils.WriteErr(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	utils.WriteJSON(w, chain)
+}
+
+func (h *HttpHandler) StopServices(w http.ResponseWriter, r *http.Request) {
+	err := h.s.StopServices(r.Context())
+	if err != nil {
+		utils.WriteErr(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	utils.WriteJSON(w, "services stopped")
 }

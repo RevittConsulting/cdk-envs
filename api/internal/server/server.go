@@ -45,12 +45,6 @@ func (s *Server) Run(ctx context.Context) error {
 		return err
 	}
 
-	go func() {
-		if err := s.ChainServices.StartServices([]string{chain_services.Logs}); err != nil {
-			cancel()
-		}
-	}()
-
 	port := fmt.Sprintf(":%v", s.Config.Port)
 	server := http.Server{
 		Addr:    port,

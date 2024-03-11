@@ -25,19 +25,19 @@ type IDatabase interface {
 	Read(bucketName string, take, offset uint64) ([]types.KeyValuePair, error)
 }
 
-type Service struct {
+type HttpService struct {
 	Config *config.BucketsConfig
 	Db     IDatabase
 }
 
-func NewService(Config *config.BucketsConfig, Db IDatabase) *Service {
-	return &Service{
+func NewService(Config *config.BucketsConfig, Db IDatabase) *HttpService {
+	return &HttpService{
 		Config: Config,
 		Db:     Db,
 	}
 }
 
-func (s *Service) ChangeDB(path string) error {
+func (s *HttpService) ChangeDB(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return fmt.Errorf("database file does not exist at path: %s", path)
 	}
@@ -56,7 +56,7 @@ func (s *Service) ChangeDB(path string) error {
 	return nil
 }
 
-func (s *Service) ListDataSource() ([]string, error) {
+func (s *HttpService) ListDataSource() ([]string, error) {
 	dataDir := os.Getenv("DATA_DIR")
 
 	var files []string
@@ -78,7 +78,7 @@ func (s *Service) ListDataSource() ([]string, error) {
 	return files, nil
 }
 
-func (s *Service) ListBuckets() ([]string, error) {
+func (s *HttpService) ListBuckets() ([]string, error) {
 	buckets, err := s.Db.ListBuckets()
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (s *Service) ListBuckets() ([]string, error) {
 	return buckets, nil
 }
 
-func (s *Service) KeysCount(name string) (uint64, error) {
+func (s *HttpService) KeysCount(name string) (uint64, error) {
 	count, err := s.Db.CountKeys(name)
 	if err != nil {
 		return 0, err
@@ -95,7 +95,7 @@ func (s *Service) KeysCount(name string) (uint64, error) {
 	return count, nil
 }
 
-func (s *Service) GetPage(name string, num int, pageLen int) ([]types.KeyValuePairString, error) {
+func (s *HttpService) GetPage(name string, num int, pageLen int) ([]types.KeyValuePairString, error) {
 	foundData, err := s.Db.Read(name, uint64(pageLen), uint64(num))
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (s *Service) GetPage(name string, num int, pageLen int) ([]types.KeyValuePa
 	return data, nil
 }
 
-func (s *Service) KeysCountLength(name string, length uint64) (uint64, []string, error) {
+func (s *HttpService) KeysCountLength(name string, length uint64) (uint64, []string, error) {
 	count, keys, err := s.Db.CountKeysOfLength(name, length)
 	if err != nil {
 		return 0, nil, err
@@ -118,7 +118,7 @@ func (s *Service) KeysCountLength(name string, length uint64) (uint64, []string,
 	return count, keys, nil
 }
 
-func (s *Service) LookupByKey(bucketName string, searchKey string) ([]byte, error) {
+func (s *HttpService) LookupByKey(bucketName string, searchKey string) ([]byte, error) {
 	var foundValue []byte
 	if strings.HasPrefix(searchKey, "0x") {
 		searchKey = searchKey[2:]
@@ -146,7 +146,7 @@ func (s *Service) LookupByKey(bucketName string, searchKey string) ([]byte, erro
 	return foundValue, nil
 }
 
-func (s *Service) SearchByValue(bucketName string, num uint64) ([]string, error) {
+func (s *HttpService) SearchByValue(bucketName string, num uint64) ([]string, error) {
 	foundKeys, _ := s.Db.FindByValue(bucketName, utils.Uint64ToBytes(num))
 	hexKeys := make([]string, 0)
 

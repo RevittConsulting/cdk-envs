@@ -7,7 +7,7 @@ type Config struct {
 	DbFile       string
 	ShutdownTime int
 
-	RPC RPCConfig
+	RPC *RPCConfig
 
 	Chains  *Chains
 	Buckets *BucketsConfig
@@ -25,6 +25,8 @@ type Chains struct {
 }
 
 type ChainConfig struct {
+	NetworkName string
+
 	BlockExplorer  string
 	CurrencySymbol string
 

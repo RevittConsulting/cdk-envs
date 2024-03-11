@@ -3,11 +3,11 @@ package chains
 import "time"
 
 type Chain struct {
-	Id          int    `json:"id" db:"id"`
 	NetworkName string `json:"networkName" db:"network_name"`
 	L1          *L1
 	L2          *L2
 	LastUpdated time.Time `json:"lastUpdated" db:"last_updated"`
+	ServiceName string    `json:"serviceName" db:"service_name"`
 }
 
 type L1 struct {
@@ -26,4 +26,8 @@ type L2 struct {
 	LatestBatchNumber int64  `json:"latestBatchNumber" db:"latest_batch_number"`
 	LatestBlockNumber int64  `json:"latestBlockNumber" db:"latest_block_number"`
 	DatastreamStatus  string `json:"datastreamStatus" db:"datastream_status"`
+}
+
+type ChainRequest struct {
+	ServiceName string `json:"serviceName"`
 }
