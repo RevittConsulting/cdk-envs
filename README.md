@@ -1,5 +1,7 @@
 # cdk-envs
 
+![CI](https://github.com/RevittConsulting/cdk-envs/actions/workflows/CI.yml/badge.svg)
+
 cdk-envs is a dockerized app, in development.
 
 ***
@@ -33,7 +35,7 @@ Chains:
     L2DataStreamUrl: "datastream.cardona.zkevm-rpc.com:6900"
 
     RollupManagerAddress: "0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-    RollupAddress: "0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
+    RollupAddress: "0xA13Ddb14437A8F34897131367ad3ca78416d6bCa"
 
     TopicsVerification: "0x9c72852172521097ba7e1482e6b44b351323df0155f97f4ea18fcec28e1f5966"
     TopicsSequence: "0x3e54d0825ed78523037d00a81759237eb436ce774bd546993ee67a1b67b6e766"

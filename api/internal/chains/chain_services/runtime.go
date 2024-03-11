@@ -18,9 +18,8 @@ var (
 type Runtime struct {
 	ChainServices *Registry
 
-	running   bool
-	mu        sync.Mutex
-	waitGroup sync.WaitGroup
+	running bool
+	mu      sync.Mutex
 
 	ActiveServices []IService
 }
