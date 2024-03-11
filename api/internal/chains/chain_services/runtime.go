@@ -18,68 +18,63 @@ var (
 type Runtime struct {
 	ChainServices *Registry
 
-	serviceChan chan IService
-	running     bool
-	mu          sync.Mutex
-	waitGroup   sync.WaitGroup
+	running   bool
+	mu        sync.Mutex
+	waitGroup sync.WaitGroup
 
-	ActiveService IService
+	ActiveServices []IService
 }
 
 func NewRuntime(ChainServices *Registry) *Runtime {
 	return &Runtime{
 		ChainServices: ChainServices,
-		serviceChan:   make(chan IService),
 		running:       false,
 	}
 }
 
-func (r *Runtime) StartService(serviceName string) error {
+func (r *Runtime) StartServices(serviceName ...string) error {
 	r.mu.Lock()
 	if r.running {
+		r.mu.Unlock()
 		return ErrServiceAlreadyRunning
 	}
-	r.running = true
-	defer r.mu.Unlock()
+	r.mu.Unlock()
 
-	service, err := r.ChainServices.GetService(serviceName)
-	if err != nil {
-		return ErrServiceNotFound
-	}
-
-	r.waitGroup.Add(1)
-	go func() {
-		defer r.waitGroup.Done()
-
-		r.ActiveService = service
-		if err = service.Start(); err != nil {
-			r.serviceChan <- nil
-			return
+	for _, service := range serviceName {
+		s, err := r.ChainServices.GetService(service)
+		if err != nil {
+			return err
 		}
 
-		r.serviceChan <- service // assign the chan in the routine, so we can stop it later
-	}()
+		if err = s.Start(); err != nil {
+			return err
+		}
+
+		r.ActiveServices = append(r.ActiveServices, s)
+	}
+
+	r.running = true
 
 	return nil
 }
 
-func (r *Runtime) StopService() error {
+func (r *Runtime) StopServices() error {
 	r.mu.Lock()
 	if !r.running {
 		r.mu.Unlock()
 		return nil
 	}
-	r.running = false
-	defer r.mu.Unlock()
+	r.mu.Unlock()
 
-	r.ActiveService = nil
-
-	service := <-r.serviceChan
-	if err := service.Stop(); err != nil {
-		return err
+	services := r.ActiveServices
+	for _, service := range services {
+		if err := service.Stop(); err != nil {
+			return err
+		}
 	}
+	r.ActiveServices = nil
 
-	r.waitGroup.Wait()
+	r.running = false
 
 	return nil
 }
@@ -88,15 +83,19 @@ func (r *Runtime) RestartService(chainName string) error {
 	ActiveChainConfigName = chainName
 	log.Println("restarting service")
 
-	if r.ActiveService != nil {
-		if err := r.StopService(); err != nil {
-			return err
+	if r.ActiveServices != nil {
+		for _, service := range r.ActiveServices {
+			if err := service.Stop(); err != nil {
+				return err
+			}
 		}
 	}
 
-	return r.StartService(Logs)
+	return r.StartServices(Logs)
 }
 
-func (r *Runtime) GetActiveService() IService {
-	return r.ActiveService
+func (r *Runtime) GetActiveServices() []IService {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.ActiveServices
 }

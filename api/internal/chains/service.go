@@ -47,3 +47,7 @@ func (s *HttpService) ChangeChainService(context context.Context, chainName stri
 // TODO: then fills out config for that service
 // TODO: websocket to that card
 // TODO: outline so we know its active
+
+func (s *HttpService) StopServices(context context.Context) error {
+	return s.Runtime.StopServices()
+}

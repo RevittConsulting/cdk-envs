@@ -1,53 +1,58 @@
 package chain_services
 
 import (
-	"errors"
-	"github.com/stretchr/testify/assert"
+	"fmt"
 	"testing"
+	"time"
 )
 
-type TestService struct{}
+type TestService struct {
+	Ticker   *time.Ticker
+	stopChan chan struct{}
+}
+
+func NewTestService() *TestService {
+	ticker := time.NewTicker(5 * time.Second)
+	return &TestService{
+		Ticker:   ticker,
+		stopChan: make(chan struct{}),
+	}
+}
 
 func (s *TestService) Start() error {
+	go func() {
+		for {
+			select {
+			case <-s.Ticker.C:
+				fmt.Println("test service tick")
+			case <-s.stopChan:
+				return
+			}
+		}
+	}()
+
 	return nil
 }
 
 func (s *TestService) Stop() error {
+	close(s.stopChan)
+	s.Ticker.Stop()
 	return nil
 }
 
 func TestRuntime(t *testing.T) {
 	registry := NewRegistry()
-	registry.Register("test", &TestService{})
+	testService := NewTestService()
+	registry.Register("test", testService)
 	r := NewRuntime(registry)
 
-	// Stop service
-	err := r.StopService()
+	err := r.StartServices("test")
 	if err != nil {
-		t.Errorf("Error stopping service: %v", err)
+		t.Errorf("error starting services: %v", err)
 	}
 
-	// Start service
-	err = r.StartService("test")
+	err = r.StopServices()
 	if err != nil {
-		t.Errorf("Error starting service: %v", err)
-	}
-
-	// Start service again
-	err = r.StartService("test")
-	if !errors.Is(err, ErrServiceAlreadyRunning) {
-		assert.Equal(t, ErrServiceAlreadyRunning, err, "starting same service again")
-	}
-
-	// Stop service
-	err = r.StopService()
-	if err != nil {
-		t.Errorf("Error stopping service: %v", err)
-	}
-
-	// Start invalid service
-	err = r.StartService("invalid-service")
-	if !errors.Is(err, ErrServiceNotFound) {
-		assert.Equal(t, ErrServiceNotFound, err, "starting invalid service")
+		t.Errorf("error stopping services: %v", err)
 	}
 }

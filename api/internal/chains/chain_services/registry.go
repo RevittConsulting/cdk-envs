@@ -3,6 +3,7 @@ package chain_services
 const (
 	Block = "block"
 	Logs  = "logs"
+	Batch = "batch"
 )
 
 type IService interface {

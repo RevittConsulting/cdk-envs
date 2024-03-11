@@ -24,6 +24,7 @@ func (h *HttpHandler) SetupRoutes(router chi.Router) {
 	router.Group(func(r chi.Router) {
 		r.Get("/chains", h.GetChains)
 		r.Post("/chains", h.ChangeChainService)
+		r.Get("/chains/stop", h.StopServices)
 	})
 }
 
@@ -51,4 +52,14 @@ func (h *HttpHandler) ChangeChainService(w http.ResponseWriter, r *http.Request)
 	}
 
 	utils.WriteJSON(w, chain)
+}
+
+func (h *HttpHandler) StopServices(w http.ResponseWriter, r *http.Request) {
+	err := h.s.StopServices(r.Context())
+	if err != nil {
+		utils.WriteErr(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	utils.WriteJSON(w, "services stopped")
 }

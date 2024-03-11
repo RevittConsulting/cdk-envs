@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -45,38 +44,21 @@ func (h *Handler) handleWebSockets(w http.ResponseWriter, r *http.Request) {
 	defer ws.Close()
 
 	for {
-		block, err := h.s.PollChainData()
+		chainData, err := h.s.PollChainData()
 		if err != nil {
 			log.Println("error polling chain data:", err)
-			break
+			continue
 		}
 
-		err = ws.WriteMessage(websocket.TextMessage, []byte(strconv.FormatUint(block, 10)))
+		err = ws.WriteMessage(websocket.TextMessage, chainData)
 		if err != nil {
-			// handle error
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("error: client disconnected unexpectedly: %v", err)
+			} else {
+				log.Println("error writing message:", err)
+			}
 			break
 		}
 		time.Sleep(1 * time.Second)
 	}
-
-	//for {
-	//	_, message, err := ws.ReadMessage()
-	//	if err != nil {
-	//		log.Println("read:", err)
-	//		break
-	//	}
-	//	log.Printf("received: %s", message)
-	//
-	//	response, err := h.s.ProcessData(message)
-	//	if err != nil {
-	//		log.Println("error processing data:", err)
-	//		break
-	//	}
-	//
-	//	err = ws.WriteMessage(websocket.TextMessage, response)
-	//	if err != nil {
-	//		log.Println("write:", err)
-	//		break
-	//	}
-	//}
 }

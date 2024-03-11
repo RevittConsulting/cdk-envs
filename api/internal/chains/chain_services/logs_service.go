@@ -13,6 +13,8 @@ type LogsService struct {
 	RpcConfig *config.RPCConfig
 	Ticker    *time.Ticker
 
+	stopChan chan struct{}
+
 	MostRecentL1Block uint64
 }
 
@@ -22,6 +24,7 @@ func NewLogsService(Config *config.Chains, RpcConfig *config.RPCConfig) *LogsSer
 		Config:    Config,
 		RpcConfig: RpcConfig,
 		Ticker:    ticker,
+		stopChan:  make(chan struct{}),
 	}
 }
 
@@ -29,25 +32,33 @@ func (s *LogsService) Start() error {
 	clientL1 := jsonrpc.NewClient(s.RpcConfig.Url)
 
 	log.Println("logs service started")
-	for range s.Ticker.C {
-		blockNum, err := clientL1.EthBlockNumber()
-		if err != nil {
-			return fmt.Errorf("error getting most recent block: %w", err)
-		}
+	go func() {
+		for {
+			select {
+			case <-s.Ticker.C:
+				blockNum, err := clientL1.EthBlockNumber()
+				if err != nil {
+					fmt.Println("error getting most recent block")
+				}
 
-		s.MostRecentL1Block = blockNum
+				s.MostRecentL1Block = blockNum
 
-		err = s.filterLogs(clientL1, blockNum)
-		if err != nil {
-			return fmt.Errorf("error filtering logs: %w", err)
+				err = s.filterLogs(clientL1, blockNum)
+				if err != nil {
+					fmt.Println("error filtering logs")
+				}
+			case <-s.stopChan:
+				return
+			}
 		}
-	}
+	}()
 
 	return nil
 }
 
 func (s *LogsService) Stop() error {
 	log.Println("logs service stopped")
+	close(s.stopChan)
 	s.Ticker.Stop()
 	return nil
 }

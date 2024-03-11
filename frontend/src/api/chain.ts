@@ -1,28 +1,33 @@
 import { Chain } from "@/types/chain";
 import { axiosInstance } from '@/utils/axios-instance'
+import { AxiosResponse } from 'axios';
 
-export const getChains = async (): Promise<Chain[]> => {
+export const getChains = async (): Promise<AxiosResponse<Chain[]>> => {
   try {
     const response = await axiosInstance.get<Chain[]>("/chains");
-    if (response.status === 200) {
-      return response.data;
-    }
+    return response
   } catch (error) {
     console.error(error);
-    return [];
+    return {} as AxiosResponse<Chain[]>;
   }
-  return [];
 };
 
-export const restartServices = async (serviceName: string) => {
+export const restartServices = async (serviceName: string): Promise<AxiosResponse> => {
   try {
     const response = await axiosInstance.post("/chains", { serviceName });
-    if (response.status === 200) {
-      return response.data;
-    }
+    return response;
   } catch (error) {
     console.error(error);
-    return {};
+    return {} as AxiosResponse;
   }
-  return {};
 };
+
+export const stopAllServices = async (): Promise<AxiosResponse> => {
+  try {
+    const response = await axiosInstance.get("/chains/stop");
+    return response;
+  } catch (error) {
+    console.error(error);
+    return {} as AxiosResponse;
+  }
+}

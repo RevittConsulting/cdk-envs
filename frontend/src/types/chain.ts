@@ -7,9 +7,26 @@ export type Chain = {
 };
 
 type L1 = {
-  [key: string]: string | number;
+  chainId: string;
+  rpcUrl: string;
+  rollupManagerAddress: string;
+  rollupAddress: string;
+
+  latestL1BlockNumber: number;
+  highestSequencedBatch: number;
+  highestVerifiedBatch: number;
 };
 
 type L2 = {
-  [key: string]: string | number;
+  chainId: string;
+  datastreamerUrl: string;
+
+  latestBatchNumber: number;
+  latestBlockNumber: number;
+  datastreamerStatus: string;
+};
+
+export type ChainData = {
+  mostRecentL1Block: number;
+  mostRecentL2Batch: number;
 };
