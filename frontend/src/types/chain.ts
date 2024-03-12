@@ -29,4 +29,4 @@ type L2 = {
 export type ChainData = {
   mostRecentL1Block: number;
   mostRecentL2Batch: number;
-};
+}

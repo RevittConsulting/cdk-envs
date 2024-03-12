@@ -6,7 +6,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ${DATA_DIR_HOST}:/data
+      - ./data:/data
     environment:
       - DATA_DIR=/data
   

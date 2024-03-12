@@ -40,6 +40,18 @@ func (s *TestService) Stop() error {
 	return nil
 }
 
+func TestRestartServices(t *testing.T) {
+	registry := NewRegistry()
+	testService := NewTestService()
+	registry.Register("test", testService)
+	r := NewRuntime(registry)
+
+	err := r.RestartService("test", "test")
+	if err != nil {
+		t.Errorf("error restarting service: %v", err)
+	}
+}
+
 func TestRuntime(t *testing.T) {
 	registry := NewRegistry()
 	testService := NewTestService()

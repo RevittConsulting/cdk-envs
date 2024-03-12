@@ -14,8 +14,9 @@ type Config struct {
 }
 
 type RPCConfig struct {
-	Url  string
-	Url2 string
+	Url        string
+	Url2       string
+	CardonaUrl string
 
 	PollingInterval time.Duration
 }

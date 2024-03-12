@@ -31,15 +31,14 @@ func NewRuntime(ChainServices *Registry) *Runtime {
 	}
 }
 
-func (r *Runtime) StartServices(serviceName ...string) error {
+func (r *Runtime) StartServices(services ...string) error {
 	r.mu.Lock()
 	if r.running {
 		r.mu.Unlock()
 		return ErrServiceAlreadyRunning
 	}
-	r.mu.Unlock()
 
-	for _, service := range serviceName {
+	for _, service := range services {
 		s, err := r.ChainServices.GetService(service)
 		if err != nil {
 			return err
@@ -54,6 +53,7 @@ func (r *Runtime) StartServices(serviceName ...string) error {
 
 	r.running = true
 
+	r.mu.Unlock()
 	return nil
 }
 
@@ -63,7 +63,6 @@ func (r *Runtime) StopServices() error {
 		r.mu.Unlock()
 		return nil
 	}
-	r.mu.Unlock()
 
 	services := r.ActiveServices
 	for _, service := range services {
@@ -75,10 +74,11 @@ func (r *Runtime) StopServices() error {
 
 	r.running = false
 
+	r.mu.Unlock()
 	return nil
 }
 
-func (r *Runtime) RestartService(chainName string) error {
+func (r *Runtime) RestartService(chainName string, services ...string) error {
 	ActiveChainConfigName = chainName
 	log.Println("restarting service")
 
@@ -90,7 +90,7 @@ func (r *Runtime) RestartService(chainName string) error {
 		}
 	}
 
-	return r.StartServices(Logs)
+	return r.StartServices(services...)
 }
 
 func (r *Runtime) GetActiveServices() []IService {

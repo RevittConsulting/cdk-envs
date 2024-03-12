@@ -11,5 +11,6 @@ func init() {
 
 	viper.SetDefault("rpc.url", "https://sepolia.drpc.org")
 	viper.SetDefault("rpc.url2", "https://rpc2.sepolia.org")
+	viper.SetDefault("rpc.cardonaurl", "https://rpc.cardona.zkevm-rpc.com/")
 	viper.SetDefault("rpc.pollinginterval", "5s")
 }

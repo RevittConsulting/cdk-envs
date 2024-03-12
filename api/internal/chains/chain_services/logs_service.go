@@ -29,6 +29,9 @@ func NewLogsService(Config *config.Chains, RpcConfig *config.RPCConfig) *LogsSer
 }
 
 func (s *LogsService) Start() error {
+	s.Ticker = time.NewTicker(5 * time.Second)
+	s.stopChan = make(chan struct{})
+
 	clientL1 := jsonrpc.NewClient(s.RpcConfig.Url)
 
 	log.Println("logs service started")
@@ -58,8 +61,17 @@ func (s *LogsService) Start() error {
 
 func (s *LogsService) Stop() error {
 	log.Println("logs service stopped")
-	close(s.stopChan)
-	s.Ticker.Stop()
+
+	if s.stopChan != nil {
+		close(s.stopChan)
+		s.stopChan = nil
+	}
+
+	if s.Ticker != nil {
+		s.Ticker.Stop()
+		s.Ticker = nil
+	}
+
 	return nil
 }
 

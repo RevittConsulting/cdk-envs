@@ -27,6 +27,7 @@ RUN go build -o apiexecutable ./cmd/api
 FROM docker.io/library/alpine:3.19
 
 COPY --from=builder /api/apiexecutable /apiexecutable
+COPY --from=builder /api/chains.yaml /chains.yaml
 
 EXPOSE 8080
 

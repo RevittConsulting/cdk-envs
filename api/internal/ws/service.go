@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"encoding/json"
 	"github.com/RevittConsulting/cdk-envs/internal/chains/chain_services"
 )
 
@@ -15,24 +14,22 @@ func NewService(Services *chain_services.Runtime) *Service {
 	}
 }
 
-func (s *Service) PollChainData() ([]byte, error) {
+func (s *Service) PollChainData() (*ChainData, error) {
+	chainData := &ChainData{}
+
 	activeServices := s.Services.GetActiveServices()
 	if activeServices == nil {
-		return []byte{}, nil
+		return chainData, nil
 	}
 
-	chainData := &ChainData{}
 	for _, service := range activeServices {
 		switch v := service.(type) {
 		case *chain_services.LogsService:
 			chainData.MostRecentL1Block = v.GetMostRecentL1Block()
+		case *chain_services.ZkEvmService:
+			chainData.MostRecentL2Batch = v.GetMostRecentL2Batch()
 		}
 	}
 
-	bytes, err := json.Marshal(chainData)
-	if err != nil {
-		return nil, err
-	}
-
-	return bytes, nil
+	return chainData, nil
 }

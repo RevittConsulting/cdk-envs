@@ -3,7 +3,7 @@ package chain_services
 const (
 	Block = "block"
 	Logs  = "logs"
-	Batch = "batch"
+	ZkEvm = "zkevm"
 )
 
 type IService interface {

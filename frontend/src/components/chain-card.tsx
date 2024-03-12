@@ -8,6 +8,7 @@ import { PlayIcon, StopIcon } from "@heroicons/react/16/solid";
 import { Link } from "lucide-react";
 import { useChainContext } from "@/context/chain-context";
 import Spinner from "@/components/spinner";
+import TripleDotLoader from "@/components/dot-ellipsis";
 
 export default function ChainCard({
   chain,
@@ -17,16 +18,18 @@ export default function ChainCard({
   data: ChainData;
 }) {
   const { activeChain, setActiveChain } = useChainContext();
-  const [dataDisplay, setDataDisplay] = useState<ChainData>({} as ChainData);
+  const [mostRecentL1Block, setMostRecentL1Block] = useState<number>(0);
+  const [mostRecentL2Batch, setMostRecentL2Batch] = useState<number>(0);
 
   useEffect(() => {
-    console.log("ChainCard data", data);
     if (activeChain === chain.serviceName) {
-      setDataDisplay(data);
+      setMostRecentL1Block(data.mostRecentL1Block);
+      setMostRecentL2Batch(data.mostRecentL2Batch);
     }
-  }, [data, activeChain, chain.serviceName]);
+  }, [data]);
 
   const startServices = async () => {
+    await stopAllServices();
     console.log("Starting RPC services for", chain.serviceName);
     const response = await restartServices(chain.serviceName);
     if (response.status >= 200 && response.status < 300) {
@@ -90,7 +93,13 @@ export default function ChainCard({
 
   return (
     chain && (
-      <div className="p-4 rounded-lg border w-[36vw]">
+      <div
+        className={`p-4 rounded-lg border w-[30vw] ${
+          activeChain === chain.serviceName
+            ? "border-purple-500 ring-2 ring-purple-500 ring-opacity-50"
+            : ""
+        }`}
+      >
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-semibold">{chain.networkName}</h1>
@@ -156,12 +165,11 @@ export default function ChainCard({
           </div>
           <div>
             <p>Latest L1 Block</p>
-            <p className="font-thin">
-              {dataDisplay.mostRecentL1Block
-                ? dataDisplay.mostRecentL1Block
-                : 0}
-            </p>
-            {renderL1ClickableLinks(`block/${chain.L1.latestL1BlockNumber}`)}
+            <div className="flex items-center gap-2">
+              <p className="font-thin">{mostRecentL1Block}</p>
+              {activeChain === chain.serviceName && <TripleDotLoader />}
+            </div>
+            {renderL1ClickableLinks(`block/${mostRecentL1Block}`)}
           </div>
 
           <hr />
@@ -171,18 +179,17 @@ export default function ChainCard({
               Chain ID: <span className="font-normal">{chain.L2.chainId}</span>
             </h3>
           </div>
-          <div className="flex gap-2">
+          <div className="">
             <p>Datastreamer URL</p>
             <p className="font-thin">{chain.L2.datastreamerUrl}</p>
           </div>
           <div>
             <p>Latest L2 Batch Number</p>
-            <p className="font-thin">
-              {dataDisplay.mostRecentL2Batch
-                ? dataDisplay.mostRecentL2Batch
-                : 0}
-            </p>
-            {renderL2ClickableLinks(`batch/${chain.L2.latestBatchNumber}`)}
+            <div className="flex items-center gap-2">
+              <p className="font-thin">{mostRecentL2Batch}</p>
+              {activeChain === chain.serviceName && <TripleDotLoader />}
+            </div>
+            {renderL2ClickableLinks(`batch/${mostRecentL2Batch}`)}
           </div>
         </div>
       </div>

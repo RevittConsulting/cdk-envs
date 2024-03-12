@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
@@ -50,7 +51,13 @@ func (h *Handler) handleWebSockets(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		err = ws.WriteMessage(websocket.TextMessage, chainData)
+		bytes, err := json.Marshal(chainData)
+		if err != nil {
+			log.Println("error marshalling chain data:", err)
+			continue
+		}
+
+		err = ws.WriteMessage(websocket.TextMessage, bytes)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: client disconnected unexpectedly: %v", err)
