@@ -13,6 +13,8 @@ type Chain struct {
 type L1 struct {
 	ChainId               string `json:"chainId" db:"chain_id"`
 	RpcUrl                string `json:"rpcUrl" db:"rpc_url"`
+	Etherscan             string `json:"etherscan" db:"etherscan"`
+	Blockscout            string `json:"blockscout" db:"blockscout"`
 	RollupManagerAddress  string `json:"rollupManagerAddress" db:"rollup_manager_address"`
 	RollupAddress         string `json:"rollupAddress" db:"rollup_address"`
 	LatestL1BlockNumber   int64  `json:"latestL1BlockNumber" db:"latest_l1_block_number"`
@@ -22,6 +24,8 @@ type L1 struct {
 
 type L2 struct {
 	ChainId           string `json:"chainId" db:"chain_id"`
+	RpcUrl            string `json:"rpcUrl" db:"rpc_url"`
+	Polygonscan       string `json:"polygonscan" db:"polygonscan"`
 	DatastreamerUrl   string `json:"datastreamerUrl" db:"datastreamer_url"`
 	LatestBatchNumber int64  `json:"latestBatchNumber" db:"latest_batch_number"`
 	LatestBlockNumber int64  `json:"latestBlockNumber" db:"latest_block_number"`

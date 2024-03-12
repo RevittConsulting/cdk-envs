@@ -23,7 +23,7 @@ func Test_HexDec(t *testing.T) {
 
 	for name, scenario := range scenarios {
 		t.Run(name, func(t *testing.T) {
-			actualHex := blockToHex(scenario.block)
+			actualHex := BlockToHex(scenario.block)
 			if actualHex != scenario.expectedHex {
 				t.Errorf("Expected %s, got %s", scenario.expectedHex, actualHex)
 			}

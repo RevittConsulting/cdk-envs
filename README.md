@@ -24,7 +24,11 @@ Set up a config file in the `/api` directory of the project called chains.yaml. 
 Chains:
   # Add any amount of chains here
   Cardona:
-    BlockExplorer: "https://cardona-zkevm.polygonscan.com/"
+    NetworkName: "Polygon zkEVM Cardona Testnet"
+
+    Etherscan: "https://sepolia.etherscan.io"
+    Blockscout: "https://eth-sepolia.blockscout.com"
+    Polygonscan: "https://cardona-zkevm.polygonscan.com"
     CurrencySymbol: "ETH"
 
     L1ChainId: 11155111

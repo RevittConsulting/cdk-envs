@@ -23,6 +23,7 @@ export default function ChainCard({
   const [mostRecentL2Block, setMostRecentL2Block] = useState<number>(0);
   const [dataStreamerStatus, setDataStreamerStatus] = useState<string>("no data");
   const [highestSequencedBatch, setHighestSequencedBatch] = useState<number>(0);
+  const [highestVerifiedBatch, setHighestVerifiedBatch] = useState<number>(0);
 
   useEffect(() => {
     if (activeChain === chain.serviceName) {
@@ -31,6 +32,7 @@ export default function ChainCard({
       setMostRecentL2Block(data.mostRecentL2Block);
       setDataStreamerStatus(data.dataStreamerStatus);
       setHighestSequencedBatch(data.highestSequencedBatch);
+      setHighestVerifiedBatch(data.highestVerifiedBatch);
     }
   }, [data]);
 
@@ -57,7 +59,7 @@ export default function ChainCard({
     return (
       <div className="flex gap-2 mt-1">
         <a
-          href={`https://sepolia.etherscan.io/${url}`}
+          href={`${chain.L1.etherscan}/${url}`}
           target="_blank"
           className="font-thin flex gap-2 bg-accent-foreground/10 hover:bg-accent-foreground/20 px-1 rounded-md"
         >
@@ -67,7 +69,7 @@ export default function ChainCard({
           </span>
         </a>
         <a
-          href={`https://zkevm.blockscout.com/${url}`}
+          href={`${chain.L1.blockscout}/${url}`}
           target="_blank"
           className="font-thin flex gap-2 bg-accent-foreground/10 hover:bg-accent-foreground/20 px-1 rounded-md"
         >
@@ -84,7 +86,7 @@ export default function ChainCard({
     return (
       <div className="flex gap-2 mt-1">
         <a
-          href={`https://zkevm.polygonscan.com/${url}`}
+          href={`${chain.L2.polygonscan}/${url}`}
           target="_blank"
           className="font-thin flex gap-2 bg-accent-foreground/10 hover:bg-accent-foreground/20 px-1 rounded-md"
         >
@@ -184,10 +186,18 @@ export default function ChainCard({
           <div>
             <div className="flex items-center gap-2">
               <p>Highest Sequenced Batch</p>
-              {renderL1ClickableLinks(`block/${highestSequencedBatch}`)}
             </div>
             <div className="flex items-center gap-2">
               <p className="font-thin">{highestSequencedBatch}</p>
+              {activeChain === chain.serviceName && <TripleDotLoader />}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p>Highest Verified Batch</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="font-thin">{highestVerifiedBatch}</p>
               {activeChain === chain.serviceName && <TripleDotLoader />}
             </div>
           </div>
@@ -202,7 +212,7 @@ export default function ChainCard({
           <div>
             <div className="flex items-center gap-2">
               <p>Latest L2 Block Number</p>
-              {renderL2ClickableLinks(`batch/${mostRecentL2Block}`)}
+              {renderL2ClickableLinks(`block/${mostRecentL2Block}`)}
             </div>
             <div className="flex items-center gap-2">
               <p className="font-thin">{mostRecentL2Block}</p>
@@ -212,7 +222,7 @@ export default function ChainCard({
           <div>
             <div className="flex items-center gap-2">
               <p>Latest L2 Batch Number</p>
-              {renderL2ClickableLinks(`batch/${mostRecentL2Batch}`)}
+              {renderL2ClickableLinks(`batches`)}
             </div>
             <div className="flex items-center gap-2">
               <p className="font-thin">{mostRecentL2Batch}</p>

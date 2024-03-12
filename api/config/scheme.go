@@ -25,6 +25,7 @@ type L1Contracts struct {
 type RPCConfig struct {
 	Url        string
 	Url2       string
+	ZkEvm      string
 	CardonaUrl string
 
 	PollingInterval time.Duration
@@ -37,7 +38,9 @@ type Chains struct {
 type ChainConfig struct {
 	NetworkName string
 
-	BlockExplorer  string
+	Etherscan      string
+	Blockscout     string
+	Polygonscan    string
 	CurrencySymbol string
 
 	L1ChainId int

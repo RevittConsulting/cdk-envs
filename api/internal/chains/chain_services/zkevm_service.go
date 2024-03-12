@@ -39,7 +39,7 @@ func (s *ZkEvmService) Start() error {
 	s.Ticker = time.NewTicker(5 * time.Second)
 	s.stopChan = make(chan struct{})
 
-	clientL2 := jsonrpc.NewClient(s.RpcConfig.CardonaUrl)
+	clientL2 := jsonrpc.NewClient(s.Config.Chains[ActiveChainConfigName].L2RpcUrl)
 
 	log.Println("zkevm service started")
 	go func() {

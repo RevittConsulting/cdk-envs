@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/config"
 	"github.com/RevittConsulting/cdk-envs/internal/jsonrpc"
+	"github.com/RevittConsulting/cdk-envs/pkg/hexadecimal"
 	"log"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -20,6 +19,7 @@ type LogsService struct {
 
 	MostRecentL1Block     uint64
 	HighestSequencedBatch uint64
+	HighestVerifiedBatch  uint64
 }
 
 func NewLogsService(Config *config.Chains, L1Contracts *config.L1Contracts, RpcConfig *config.RPCConfig) *LogsService {
@@ -37,7 +37,7 @@ func (s *LogsService) Start() error {
 	s.Ticker = time.NewTicker(5 * time.Second)
 	s.stopChan = make(chan struct{})
 
-	clientL1 := jsonrpc.NewClient(s.RpcConfig.Url)
+	clientL1 := jsonrpc.NewClient(s.Config.Chains[ActiveChainConfigName].L1RpcUrl)
 
 	go func() {
 		log.Println("logs service started")
@@ -50,7 +50,11 @@ func (s *LogsService) Start() error {
 					fmt.Println("error getting most recent block")
 				}
 				if blockNum > s.MostRecentL1Block {
-					err = s.filterLogs(clientL1, blockNum)
+					err = s.filterLogsSequence(clientL1, blockNum)
+					if err != nil {
+						fmt.Println("error filtering logs")
+					}
+					err = s.filterLogsVerification(clientL1, blockNum)
 					if err != nil {
 						fmt.Println("error filtering logs")
 					}
@@ -88,7 +92,11 @@ func (s *LogsService) GetHighestSequencedBatch() uint64 {
 	return s.HighestSequencedBatch
 }
 
-func (s *LogsService) filterLogs(clientL1 *jsonrpc.Client, blockNum uint64) error {
+func (s *LogsService) GetHighestVerifiedBatch() uint64 {
+	return s.HighestVerifiedBatch
+}
+
+func (s *LogsService) filterLogsSequence(clientL1 *jsonrpc.Client, blockNum uint64) error {
 	fromBlock := fmt.Sprintf("0x%X", blockNum-100)
 	toBlock := "latest"
 	address := interface{}(s.Config.Chains[ActiveChainConfigName].RollupAddress)
@@ -112,7 +120,7 @@ func (s *LogsService) filterLogs(clientL1 *jsonrpc.Client, blockNum uint64) erro
 		return nil
 	}
 
-	sequencedBatch, err := s.getHighestSequencedBatch(logs[0].Topics[1])
+	sequencedBatch, err := hexadecimal.HashToUint64(logs[0].Topics[1])
 	if err != nil {
 		return fmt.Errorf("error getting highest sequenced batch: %w", err)
 	}
@@ -124,15 +132,38 @@ func (s *LogsService) filterLogs(clientL1 *jsonrpc.Client, blockNum uint64) erro
 	return nil
 }
 
-func (s *LogsService) getHighestSequencedBatch(topic string) (uint64, error) {
-	batchNum, err := hashToUint64(topic)
-	if err != nil {
-		return 0, fmt.Errorf("error converting hash to uint64: %w", err)
+func (s *LogsService) filterLogsVerification(clientL1 *jsonrpc.Client, blockNum uint64) error {
+	fromBlock := fmt.Sprintf("0x%X", blockNum-20000)
+	toBlock := "latest"
+	address := interface{}(s.Config.Chains[ActiveChainConfigName].RollupManagerAddress)
+	topics := []interface{}{
+		s.Config.Chains[ActiveChainConfigName].TopicsVerification,
 	}
-	return batchNum, nil
-}
 
-func hashToUint64(hash string) (uint64, error) {
-	cleanHash := strings.TrimPrefix(hash, "0x")
-	return strconv.ParseUint(cleanHash, 16, 64)
+	query := jsonrpc.LogQuery{
+		FromBlock: &fromBlock,
+		ToBlock:   &toBlock,
+		Address:   &address,
+		Topics:    &topics,
+	}
+
+	logs, err := clientL1.EthGetLogs(query)
+	if err != nil {
+		return fmt.Errorf("error getting logs: %w", err)
+	}
+
+	if len(logs) == 0 {
+		return nil
+	}
+
+	verifiedBatch, err := hexadecimal.HashToUint64(logs[0].Topics[1])
+	if err != nil {
+		return fmt.Errorf("error getting highest sequenced batch: %w", err)
+	}
+
+	if verifiedBatch > s.HighestVerifiedBatch {
+		s.HighestVerifiedBatch = verifiedBatch
+	}
+
+	return nil
 }
