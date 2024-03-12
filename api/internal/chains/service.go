@@ -36,7 +36,7 @@ func (s *HttpService) GetChains(context context.Context) ([]*Chain, error) {
 }
 
 func (s *HttpService) ChangeChainService(context context.Context, chainName string) (string, error) {
-	if err := s.Runtime.RestartService(chainName); err != nil {
+	if err := s.Runtime.RestartService(chainName, chain_services.Logs, chain_services.ZkEvm); err != nil {
 		return "", err
 	}
 

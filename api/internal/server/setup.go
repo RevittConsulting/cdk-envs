@@ -31,6 +31,10 @@ func (s *Server) SetupDeps() error {
 	logsService := chain_services.NewLogsService(s.Config.Chains, s.Config.RPC)
 	registry.Register(chain_services.Logs, logsService)
 
+	// zkevm service
+	zkEvmService := chain_services.NewZkEvmService(s.Config.Chains, s.Config.RPC)
+	registry.Register(chain_services.ZkEvm, zkEvmService)
+
 	// runtime (for starting and stopping go services via http)
 	run := chain_services.NewRuntime(registry)
 

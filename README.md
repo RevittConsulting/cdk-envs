@@ -18,7 +18,7 @@ cdk-envs is a dockerized app, in development.
 
 ## Config
 
-Set up a config file in the root of the project called chains.yaml.
+Set up a config file in the `/api` directory of the project called chains.yaml. There is an example of this config in the root. This must be put in the api folder.
 
 ```yaml
 Chains:
@@ -49,10 +49,12 @@ Chains:
 git clone https://github.com/RevittConsulting/cdk-envs
 ```
 
-You can mount your data directory that contains your mdbx.dat data files
+You can mount your data directory that contains your mdbx.dat data files. Do this by placing your data in `/data` in the project root.
+
+To build and run the containers:
 
 ```bash
-make cdk-envs data=path/to/your/data
+make cdk-envs
 ```
 
 ***

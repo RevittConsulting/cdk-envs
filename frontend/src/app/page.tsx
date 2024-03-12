@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import ChainCard from "@/components/chain-card";
 import { Chain, ChainData } from "../types/chain";
-import { getChains } from "@/api/chain";
+import { getChains, stopAllServices } from "@/api/chain";
+import { useChainContext } from "@/context/chain-context";
 
 export default function Home() {
   const [chains, setChains] = useState<Chain[]>([]);
+  const { activeChain, setActiveChain } = useChainContext();
 
   const [data, setData] = useState<ChainData>({} as ChainData);
   useEffect(() => {
@@ -18,9 +20,13 @@ export default function Home() {
 
     ws.onmessage = (event) => {
       console.log("Received data from the server", event.data);
-      const newData = event.data;
-      setData(newData);
-    };
+      try {
+        const newData: ChainData = JSON.parse(event.data);
+        setData(newData);
+      } catch (error) {
+        console.error("Error parsing data:", error);
+      }
+    };  
 
     ws.onerror = (error) => {
       console.error("WebSocket error:", error);
@@ -35,7 +41,16 @@ export default function Home() {
     };
   }, []);
 
+  const cleanup = async () => {
+    const res = await stopAllServices();
+    if (res.status >= 200 && res.status < 300) {
+      setActiveChain(null);
+    }
+  }
+
   useEffect(() => {
+    cleanup();
+
     const fetchChains = async () => {
       const res = await getChains();
       if (res.status >= 200 && res.status < 300) {
