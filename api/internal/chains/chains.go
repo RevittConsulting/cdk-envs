@@ -41,6 +41,8 @@ func (c *Chains) CreateChains(chainNames []string) ([]*Chain, error) {
 			L1: &L1{
 				ChainId:               strconv.Itoa(chainConfig.L1ChainId),
 				RpcUrl:                chainConfig.L1RpcUrl,
+				Blockscout:            chainConfig.Blockscout,
+				Etherscan:             chainConfig.Etherscan,
 				RollupManagerAddress:  chainConfig.RollupManagerAddress,
 				RollupAddress:         chainConfig.RollupAddress,
 				LatestL1BlockNumber:   0,
@@ -49,6 +51,8 @@ func (c *Chains) CreateChains(chainNames []string) ([]*Chain, error) {
 			},
 			L2: &L2{
 				ChainId:           strconv.Itoa(chainConfig.L2ChainId),
+				RpcUrl:            chainConfig.L2RpcUrl,
+				Polygonscan:       chainConfig.Polygonscan,
 				DatastreamerUrl:   chainConfig.L2DataStreamUrl,
 				LatestBatchNumber: 0,
 				LatestBlockNumber: 0,

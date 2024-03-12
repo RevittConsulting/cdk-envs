@@ -20,11 +20,19 @@ export default function ChainCard({
   const { activeChain, setActiveChain } = useChainContext();
   const [mostRecentL1Block, setMostRecentL1Block] = useState<number>(0);
   const [mostRecentL2Batch, setMostRecentL2Batch] = useState<number>(0);
+  const [mostRecentL2Block, setMostRecentL2Block] = useState<number>(0);
+  const [dataStreamerStatus, setDataStreamerStatus] = useState<string>("no data");
+  const [highestSequencedBatch, setHighestSequencedBatch] = useState<number>(0);
+  const [highestVerifiedBatch, setHighestVerifiedBatch] = useState<number>(0);
 
   useEffect(() => {
     if (activeChain === chain.serviceName) {
       setMostRecentL1Block(data.mostRecentL1Block);
       setMostRecentL2Batch(data.mostRecentL2Batch);
+      setMostRecentL2Block(data.mostRecentL2Block);
+      setDataStreamerStatus(data.dataStreamerStatus);
+      setHighestSequencedBatch(data.highestSequencedBatch);
+      setHighestVerifiedBatch(data.highestVerifiedBatch);
     }
   }, [data]);
 
@@ -51,9 +59,9 @@ export default function ChainCard({
     return (
       <div className="flex gap-2 mt-1">
         <a
-          href={`https://sepolia.etherscan.io/${url}`}
+          href={`${chain.L1.etherscan}/${url}`}
           target="_blank"
-          className="font-thin flex gap-2 bg-accent-foreground/20 hover:bg-accent-foreground/30 px-1 rounded-md"
+          className="font-thin flex gap-2 bg-accent-foreground/10 hover:bg-accent-foreground/20 px-1 rounded-md"
         >
           etherscan
           <span>
@@ -61,9 +69,9 @@ export default function ChainCard({
           </span>
         </a>
         <a
-          href={`https://zkevm.blockscout.com/${url}`}
+          href={`${chain.L1.blockscout}/${url}`}
           target="_blank"
-          className="font-thin flex gap-2 bg-accent-foreground/20 hover:bg-accent-foreground/30 px-1 rounded-md"
+          className="font-thin flex gap-2 bg-accent-foreground/10 hover:bg-accent-foreground/20 px-1 rounded-md"
         >
           blockscout
           <span>
@@ -78,9 +86,9 @@ export default function ChainCard({
     return (
       <div className="flex gap-2 mt-1">
         <a
-          href={`https://zkevm.polygonscan.com/${url}`}
+          href={`${chain.L2.polygonscan}/${url}`}
           target="_blank"
-          className="font-thin flex gap-2 bg-accent-foreground/20 hover:bg-accent-foreground/30 px-1 rounded-md"
+          className="font-thin flex gap-2 bg-accent-foreground/10 hover:bg-accent-foreground/20 px-1 rounded-md"
         >
           polygonscan
           <span>
@@ -94,7 +102,7 @@ export default function ChainCard({
   return (
     chain && (
       <div
-        className={`p-4 rounded-lg border w-[30vw] ${
+        className={`p-4 rounded-lg border w-[34vw] ${
           activeChain === chain.serviceName
             ? "border-purple-500 ring-2 ring-purple-500 ring-opacity-50"
             : ""
@@ -149,27 +157,49 @@ export default function ChainCard({
               Chain ID: <span className="font-normal">{chain.L1.chainId}</span>
             </h2>
           </div>
-          <div className="flex gap-2">
-            <p>Rpc URL</p>
-            <p className="font-thin">{chain.L1.rpcUrl}</p>
-          </div>
           <div>
-            <p>Rollup Manager Address</p>
+            <div className="flex items-center gap-2">
+              <p>Rollup Manager Address</p>
+              {renderL1ClickableLinks(
+                `address/${chain.L1.rollupManagerAddress}`
+              )}
+            </div>
             <p className="font-thin">{chain.L1.rollupManagerAddress}</p>
-            {renderL1ClickableLinks(`address/${chain.L1.rollupManagerAddress}`)}
           </div>
           <div>
-            <p>Rollup Address</p>
+            <div className="flex items-center gap-2">
+              <p>Rollup Address</p>
+              {renderL1ClickableLinks(`address/${chain.L1.rollupAddress}`)}
+            </div>
             <p className="font-thin">{chain.L1.rollupAddress}</p>
-            {renderL1ClickableLinks(`address/${chain.L1.rollupAddress}`)}
           </div>
           <div>
-            <p>Latest L1 Block</p>
+            <div className="flex items-center gap-2">
+              <p>Latest L1 Block Number</p>
+              {renderL1ClickableLinks(`block/${mostRecentL1Block}`)}
+            </div>
             <div className="flex items-center gap-2">
               <p className="font-thin">{mostRecentL1Block}</p>
               {activeChain === chain.serviceName && <TripleDotLoader />}
             </div>
-            {renderL1ClickableLinks(`block/${mostRecentL1Block}`)}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p>Highest Sequenced Batch</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="font-thin">{highestSequencedBatch}</p>
+              {activeChain === chain.serviceName && <TripleDotLoader />}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p>Highest Verified Batch</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="font-thin">{highestVerifiedBatch}</p>
+              {activeChain === chain.serviceName && <TripleDotLoader />}
+            </div>
           </div>
 
           <hr />
@@ -179,17 +209,35 @@ export default function ChainCard({
               Chain ID: <span className="font-normal">{chain.L2.chainId}</span>
             </h3>
           </div>
-          <div className="">
-            <p>Datastreamer URL</p>
-            <p className="font-thin">{chain.L2.datastreamerUrl}</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <p>Latest L2 Block Number</p>
+              {renderL2ClickableLinks(`block/${mostRecentL2Block}`)}
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="font-thin">{mostRecentL2Block}</p>
+              {activeChain === chain.serviceName && <TripleDotLoader />}
+            </div>
           </div>
           <div>
-            <p>Latest L2 Batch Number</p>
+            <div className="flex items-center gap-2">
+              <p>Latest L2 Batch Number</p>
+              {renderL2ClickableLinks(`batches`)}
+            </div>
             <div className="flex items-center gap-2">
               <p className="font-thin">{mostRecentL2Batch}</p>
               {activeChain === chain.serviceName && <TripleDotLoader />}
             </div>
-            {renderL2ClickableLinks(`batch/${mostRecentL2Batch}`)}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p>Datastreamer Status</p>
+            </div>
+            <p className="font-thin">{chain.L2.datastreamerUrl}</p>
+            <div className="flex items-center gap-2">
+              <p className="font-thin"><span className="font-normal">Status: </span>{dataStreamerStatus}</p>
+              {activeChain === chain.serviceName && <TripleDotLoader />}
+            </div>
           </div>
         </div>
       </div>

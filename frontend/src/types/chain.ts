@@ -9,6 +9,10 @@ export type Chain = {
 type L1 = {
   chainId: string;
   rpcUrl: string;
+
+  etherscan: string;
+  blockscout: string;
+
   rollupManagerAddress: string;
   rollupAddress: string;
 
@@ -19,6 +23,8 @@ type L1 = {
 
 type L2 = {
   chainId: string;
+  rpcUrl: string;
+  polygonscan: string;
   datastreamerUrl: string;
 
   latestBatchNumber: number;
@@ -28,5 +34,9 @@ type L2 = {
 
 export type ChainData = {
   mostRecentL1Block: number;
+  highestSequencedBatch: number;
+  highestVerifiedBatch: number;
   mostRecentL2Batch: number;
+  mostRecentL2Block: number;
+  dataStreamerStatus: string;
 }

@@ -28,7 +28,7 @@ func (s *Server) SetupDeps() error {
 	registry.Register(chain_services.Block, blockService)
 
 	// logs service
-	logsService := chain_services.NewLogsService(s.Config.Chains, s.Config.RPC)
+	logsService := chain_services.NewLogsService(s.Config.Chains, s.Config.L1Contracts, s.Config.RPC)
 	registry.Register(chain_services.Logs, logsService)
 
 	// zkevm service

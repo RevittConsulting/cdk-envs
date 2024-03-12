@@ -11,11 +11,21 @@ type Config struct {
 
 	Chains  *Chains
 	Buckets *BucketsConfig
+
+	L1Contracts *L1Contracts
+}
+
+type L1Contracts struct {
+	SequencedBatchTopic         string
+	VerificationTopic           string
+	UpdateL1InfoTreeTopic       string
+	InitialSequenceBatchesTopic string
 }
 
 type RPCConfig struct {
 	Url        string
 	Url2       string
+	ZkEvm      string
 	CardonaUrl string
 
 	PollingInterval time.Duration
@@ -28,7 +38,9 @@ type Chains struct {
 type ChainConfig struct {
 	NetworkName string
 
-	BlockExplorer  string
+	Etherscan      string
+	Blockscout     string
+	Polygonscan    string
 	CurrencySymbol string
 
 	L1ChainId int

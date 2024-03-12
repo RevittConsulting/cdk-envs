@@ -2,14 +2,16 @@ Chains:
   Cardona:
     NetworkName: "Polygon zkEVM Cardona Testnet"
 
-    BlockExplorer: "https://cardona-zkevm.polygonscan.com/"
+    Etherscan: "https://sepolia.etherscan.io"
+    Blockscout: "https://eth-sepolia.blockscout.com"
+    Polygonscan: "https://cardona-zkevm.polygonscan.com"
     CurrencySymbol: "ETH"
 
     L1ChainId: 11155111
     L1RpcUrl: "https://rpc.sepolia.org"
 
     L2ChainId: 2442
-    L2RpcUrl: "https://rpc.cardona.zkevm-rpc.com/"
+    L2RpcUrl: "https://rpc.cardona.zkevm-rpc.com"
     L2DataStreamUrl: "datastream.cardona.zkevm-rpc.com:6900"
 
     RollupManagerAddress: "0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
@@ -21,14 +23,16 @@ Chains:
   CardonaInternal:
     NetworkName: "Polygon zkEVM Cardona Internal"
 
-    BlockExplorer: "https://cardona-zkevm.polygonscan.com/"
+    Etherscan: "https://sepolia.etherscan.io"
+    Blockscout: "https://eth-sepolia.blockscout.com"
+
     CurrencySymbol: "ETH"
 
     L1ChainId: 11155111
     L1RpcUrl: "https://rpc.sepolia.org"
 
     L2ChainId: 2440
-    L2RpcUrl: "https://rpc.internal.zkevm-rpc.com/"
+    L2RpcUrl: "https://rpc.internal.zkevm-rpc.com"
     L2DataStreamUrl: "datastream.cardona.zkevm-rpc.com:6900"
 
     RollupManagerAddress: "0xE2EF6215aDc132Df6913C8DD16487aBF118d1764"
