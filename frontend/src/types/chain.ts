@@ -28,5 +28,8 @@ type L2 = {
 
 export type ChainData = {
   mostRecentL1Block: number;
+  highestSequencedBatch: number;
   mostRecentL2Batch: number;
+  mostRecentL2Block: number;
+  dataStreamerStatus: string;
 }

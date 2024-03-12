@@ -11,6 +11,15 @@ type Config struct {
 
 	Chains  *Chains
 	Buckets *BucketsConfig
+
+	L1Contracts *L1Contracts
+}
+
+type L1Contracts struct {
+	SequencedBatchTopic         string
+	VerificationTopic           string
+	UpdateL1InfoTreeTopic       string
+	InitialSequenceBatchesTopic string
 }
 
 type RPCConfig struct {
