@@ -11,6 +11,9 @@ const Nav = () => {
   const visitDatacryp = () => {
     router.push("/datacryp");
   };
+  const visitTx = () => {
+    router.push("/tx");
+  };
   return (
     <nav className="flex items-center justify-between p-2 mx-4 md:mx-32">
       <div className="flex items-center gap-4">
@@ -25,6 +28,9 @@ const Nav = () => {
         </Link>
         <Button variant="outlineprimary" onClick={() => {visitDatacryp()}}>
           Datacryp
+        </Button>
+        <Button variant="outlineprimary" onClick={() => {visitTx()}}>
+          Tx
         </Button>
       </div>
 

@@ -26,7 +26,7 @@ export default function Home() {
       } catch (error) {
         console.error("Error parsing data:", error);
       }
-    };  
+    };
 
     ws.onerror = (error) => {
       console.error("WebSocket error:", error);
@@ -46,7 +46,7 @@ export default function Home() {
     if (res.status >= 200 && res.status < 300) {
       setActiveChain(null);
     }
-  }
+  };
 
   useEffect(() => {
     cleanup();
@@ -65,11 +65,15 @@ export default function Home() {
 
   return (
     <div className="mt-4 mx-20">
-        <div className="flex gap-4 justify-center p-4">
-          {chains.map((chain, index) => (
+      <div className="flex gap-4 justify-center p-4">
+        {chains.length > 0 ? (
+          chains.map((chain, index) => (
             <ChainCard key={index} chain={chain} data={data} />
-          ))}
-        </div>
+          ))
+        ) : (
+          <div>No chains found</div>
+        )}
+      </div>
     </div>
   );
 }

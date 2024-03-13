@@ -1,9 +1,9 @@
 package chains
 
 import (
-	"fmt"
 	"github.com/RevittConsulting/cdk-envs/pkg/utils"
 	"github.com/go-chi/chi/v5"
+	"log"
 	"net/http"
 )
 
@@ -20,7 +20,7 @@ func NewHandler(r chi.Router, s *HttpService) *HttpHandler {
 }
 
 func (h *HttpHandler) SetupRoutes(router chi.Router) {
-	fmt.Println("setting up routes for chains...")
+	log.Println("setting up routes for chains...")
 	router.Group(func(r chi.Router) {
 		r.Get("/chains", h.GetChains)
 		r.Post("/chains", h.ChangeChainService)

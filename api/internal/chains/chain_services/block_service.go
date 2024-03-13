@@ -2,19 +2,18 @@ package chain_services
 
 import (
 	"fmt"
-	"github.com/RevittConsulting/cdk-envs/config"
 	"github.com/RevittConsulting/cdk-envs/internal/jsonrpc"
 	"time"
 )
 
 type BlockService struct {
-	RpcConfig *config.RPCConfig
+	RpcConfig *jsonrpc.Config
 	Ticker    *time.Ticker
 
 	MostRecentL1Block uint64
 }
 
-func NewBlockService(RpcConfig *config.RPCConfig) *BlockService {
+func NewBlockService(RpcConfig *jsonrpc.Config) *BlockService {
 	ticker := time.NewTicker(10 * time.Second)
 	return &BlockService{
 		RpcConfig: RpcConfig,

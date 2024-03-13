@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/internal/jsonrpc"
 	"github.com/magiconair/properties/assert"
+	"math/big"
 	"testing"
 )
 
@@ -47,4 +48,17 @@ func Test_EthGetLogs(t *testing.T) {
 	t.Log("logs:", logs)
 
 	assert.Equal(t, len(logs) > 0, true)
+}
+
+func Test_EthGasPrice(t *testing.T) {
+	client := jsonrpc.NewClient("https://rpc.sepolia.org")
+
+	gasPrice, err := client.EthGasPrice()
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log("gasPrice:", gasPrice)
+
+	assert.Equal(t, gasPrice.Cmp(new(big.Int).SetUint64(0)) > 0, true)
 }

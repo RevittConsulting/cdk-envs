@@ -12,7 +12,7 @@ import (
 type LogsService struct {
 	Config      *config.Chains
 	L1Contracts *config.L1Contracts
-	RpcConfig   *config.RPCConfig
+	RpcConfig   *jsonrpc.Config
 	Ticker      *time.Ticker
 
 	stopChan chan struct{}
@@ -22,7 +22,7 @@ type LogsService struct {
 	HighestVerifiedBatch  uint64
 }
 
-func NewLogsService(Config *config.Chains, L1Contracts *config.L1Contracts, RpcConfig *config.RPCConfig) *LogsService {
+func NewLogsService(Config *config.Chains, L1Contracts *config.L1Contracts, RpcConfig *jsonrpc.Config) *LogsService {
 	ticker := time.NewTicker(5 * time.Second)
 	return &LogsService{
 		Config:      Config,

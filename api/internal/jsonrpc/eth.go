@@ -39,3 +39,23 @@ func (c *Client) EthGetLogs(query LogQuery) ([]Log, error) {
 
 	return logs, nil
 }
+
+func (c *Client) EthGasPrice() (*big.Int, error) {
+	res, err := c.DoRequest("eth_gasPrice")
+	if err != nil {
+		return nil, err
+	}
+
+	var result string
+	err = json.Unmarshal(res.Result, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	gasPrice, ok := new(big.Int).SetString(result[2:], 16)
+	if !ok {
+		return nil, err
+	}
+
+	return gasPrice, nil
+}

@@ -1,16 +1,21 @@
 package config
 
-import "time"
+import (
+	"github.com/RevittConsulting/cdk-envs/internal/buckets"
+	"github.com/RevittConsulting/cdk-envs/internal/jsonrpc"
+	"github.com/RevittConsulting/cdk-envs/internal/tx"
+)
 
 type Config struct {
 	Port         int
 	DbFile       string
 	ShutdownTime int
 
-	RPC *RPCConfig
+	RPC *jsonrpc.Config
 
 	Chains  *Chains
-	Buckets *BucketsConfig
+	Buckets *buckets.Config
+	Tx      *tx.Config
 
 	L1Contracts *L1Contracts
 }
@@ -22,20 +27,11 @@ type L1Contracts struct {
 	InitialSequenceBatchesTopic string
 }
 
-type RPCConfig struct {
-	Url        string
-	Url2       string
-	ZkEvm      string
-	CardonaUrl string
-
-	PollingInterval time.Duration
-}
-
 type Chains struct {
-	Chains map[string]*ChainConfig
+	Chains map[string]*Chain
 }
 
-type ChainConfig struct {
+type Chain struct {
 	NetworkName string
 
 	Etherscan      string
@@ -56,5 +52,3 @@ type ChainConfig struct {
 	TopicsVerification string
 	TopicsSequence     string
 }
-
-type BucketsConfig struct{}

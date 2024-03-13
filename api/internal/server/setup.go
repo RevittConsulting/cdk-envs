@@ -6,6 +6,7 @@ import (
 	"github.com/RevittConsulting/cdk-envs/internal/chains"
 	"github.com/RevittConsulting/cdk-envs/internal/chains/chain_services"
 	"github.com/RevittConsulting/cdk-envs/internal/health"
+	"github.com/RevittConsulting/cdk-envs/internal/tx"
 	"github.com/RevittConsulting/cdk-envs/internal/ws"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
@@ -14,6 +15,7 @@ import (
 type dependencies struct {
 	chain   *chains.HttpService
 	buckets *buckets.HttpService
+	tx      *tx.HttpService
 	ws      *ws.Service
 }
 
@@ -45,6 +47,9 @@ func (s *Server) SetupDeps() error {
 	mdbxdb := mdbx.New()
 	deps.buckets = buckets.NewService(s.Config.Buckets, mdbxdb)
 
+	// tx http service
+	deps.tx = tx.NewService(s.Config.Tx)
+
 	// websocket
 	wsService := ws.NewService(run)
 	deps.ws = wsService
@@ -73,6 +78,7 @@ func (s *Server) SetupHandlers() error {
 		health.NewHandler(r, s.ShuttingDown)
 		chains.NewHandler(r, s.Deps.chain)
 		buckets.NewHandler(r, s.Deps.buckets)
+		tx.NewHandler(r, s.Deps.tx)
 		ws.NewHandler(r, s.Deps.ws)
 	})
 	return nil
