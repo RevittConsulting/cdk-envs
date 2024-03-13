@@ -3,7 +3,6 @@ package buckets
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/RevittConsulting/cdk-envs/config"
 	"github.com/RevittConsulting/cdk-envs/internal/buckets/db/mdbx"
 	"github.com/RevittConsulting/cdk-envs/internal/types"
 	"github.com/RevittConsulting/cdk-envs/pkg/utils"
@@ -26,11 +25,11 @@ type IDatabase interface {
 }
 
 type HttpService struct {
-	Config *config.BucketsConfig
+	Config *Config
 	Db     IDatabase
 }
 
-func NewService(Config *config.BucketsConfig, Db IDatabase) *HttpService {
+func NewService(Config *Config, Db IDatabase) *HttpService {
 	return &HttpService{
 		Config: Config,
 		Db:     Db,

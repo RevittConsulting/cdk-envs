@@ -15,7 +15,7 @@ var (
 
 type ZkEvmService struct {
 	Config    *config.Chains
-	RpcConfig *config.RPCConfig
+	RpcConfig *jsonrpc.Config
 	Ticker    *time.Ticker
 
 	stopChan chan struct{}
@@ -25,7 +25,7 @@ type ZkEvmService struct {
 	DataStreamerStatus string
 }
 
-func NewZkEvmService(Config *config.Chains, RpcConfig *config.RPCConfig) *ZkEvmService {
+func NewZkEvmService(Config *config.Chains, RpcConfig *jsonrpc.Config) *ZkEvmService {
 	ticker := time.NewTicker(5 * time.Second)
 	return &ZkEvmService{
 		Config:    Config,

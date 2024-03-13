@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Nav from "@/components/nav";
 import { BucketProvider } from "@/context/bucket-context";
 import { ChainProvider } from "@/context/chain-context";
+import { TxProvider } from "@/context/tx-context";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,8 +31,10 @@ export default function RootLayout({
         >
           <BucketProvider>
           <ChainProvider>
+          <TxProvider>
             <Nav />
             {children}
+          </TxProvider>
           </ChainProvider>
           </BucketProvider>
         </ThemeProvider>
