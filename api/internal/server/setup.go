@@ -10,6 +10,7 @@ import (
 	"github.com/RevittConsulting/cdk-envs/internal/ws"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	"github.com/RevittConsulting/cdk-envs/internal/datastream"
 )
 
 type dependencies struct {
@@ -17,6 +18,8 @@ type dependencies struct {
 	buckets *buckets.HttpService
 	tx      *tx.HttpService
 	ws      *ws.Service
+
+	streamService *datastream.Service
 }
 
 func (s *Server) SetupDeps() error {
@@ -36,6 +39,9 @@ func (s *Server) SetupDeps() error {
 	// zkevm service
 	zkEvmService := chain_services.NewZkEvmService(s.Config.Chains, s.Config.RPC)
 	registry.Register(chain_services.ZkEvm, zkEvmService)
+
+	// datastream service
+	deps.streamService = datastream.NewService(s.Config.Datastream)
 
 	// runtime (for starting and stopping go services via http)
 	run := chain_services.NewRuntime(registry)
@@ -80,6 +86,7 @@ func (s *Server) SetupHandlers() error {
 		buckets.NewHandler(r, s.Deps.buckets)
 		tx.NewHandler(r, s.Deps.tx)
 		ws.NewHandler(r, s.Deps.ws)
+		datastream.NewHandler(r, s.Deps.streamService)
 	})
 	return nil
 }

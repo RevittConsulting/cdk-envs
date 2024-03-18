@@ -24,4 +24,9 @@ func init() {
 
 	// tx
 	viper.SetDefault("tx.privatekey", "key")
+
+	// datastream
+	viper.SetDefault("datastream.server", "http://localhost:8080")
+	viper.SetDefault("datastream.streamtype", 0)
+
 }
