@@ -6,6 +6,7 @@ import (
 	"github.com/RevittConsulting/cdk-envs/internal/jsonrpc"
 	"github.com/RevittConsulting/cdk-envs/pkg/hexadecimal"
 	"log"
+	"math/big"
 	"time"
 )
 
@@ -97,32 +98,63 @@ func (s *LogsService) GetHighestVerifiedBatch() uint64 {
 }
 
 func (s *LogsService) filterLogsSequence(clientL1 *jsonrpc.Client, blockNum uint64) error {
-	fromBlock := fmt.Sprintf("0x%X", blockNum-100)
-	toBlock := "latest"
-	address := interface{}(s.Config.Chains[ActiveChainConfigName].RollupAddress)
-	topics := []interface{}{
-		s.Config.Chains[ActiveChainConfigName].TopicsSequence,
+	latestBlock := big.NewInt(int64(blockNum))
+	blockRange := big.NewInt(10000)
+	var foundLog *jsonrpc.Log
+
+	for {
+		from := new(big.Int).Sub(latestBlock, blockRange)
+		if from.Cmp(big.NewInt(0)) == -1 {
+			from = big.NewInt(0)
+		}
+
+		fromBlock := fmt.Sprintf("0x%X", from)
+		toBlock := "latest"
+		address := interface{}(s.Config.Chains[ActiveChainConfigName].RollupAddress)
+		topics := []interface{}{
+			s.Config.Chains[ActiveChainConfigName].TopicsSequence,
+		}
+
+		query := jsonrpc.LogQuery{
+			FromBlock: &fromBlock,
+			ToBlock:   &toBlock,
+			Address:   &address,
+			Topics:    &topics,
+		}
+
+		logs, err := clientL1.EthGetLogs(query)
+		if err != nil {
+			return fmt.Errorf("error getting logs: %w", err)
+		}
+
+		if len(logs) > 0 {
+			fmt.Println("Found logs.")
+			foundLog = &logs[len(logs)-1]
+			break
+		}
+
+		latestBlock = new(big.Int).Sub(from, big.NewInt(1))
+		if latestBlock.Cmp(big.NewInt(0)) == -1 || from.Cmp(big.NewInt(0)) == 0 {
+			fmt.Println("No logs found.")
+			return nil
+		}
+
+		fmt.Println("No logs found. Continuing to search.")
 	}
 
-	query := jsonrpc.LogQuery{
-		FromBlock: &fromBlock,
-		ToBlock:   &toBlock,
-		Address:   &address,
-		Topics:    &topics,
-	}
-
-	logs, err := clientL1.EthGetLogs(query)
-	if err != nil {
-		return fmt.Errorf("error getting logs: %w", err)
-	}
-
-	if len(logs) == 0 {
-		return nil
-	}
-
-	sequencedBatch, err := hexadecimal.HashToUint64(logs[0].Topics[1])
-	if err != nil {
-		return fmt.Errorf("error getting highest sequenced batch: %w", err)
+	var sequencedBatch uint64
+	if foundLog != nil {
+		fmt.Printf("Found log: %+v\n", *foundLog)
+		if len(foundLog.Topics) >= 2 {
+			sequenced, err := hexadecimal.HashToUint64(foundLog.Topics[1])
+			if err != nil {
+				return fmt.Errorf("error getting highest sequenced batch: %w", err)
+			}
+			sequencedBatch = sequenced
+			fmt.Println("The found log does not contain a second topic.")
+		}
+	} else {
+		fmt.Println("No logs found.")
 	}
 
 	if sequencedBatch > s.HighestSequencedBatch {
@@ -133,32 +165,64 @@ func (s *LogsService) filterLogsSequence(clientL1 *jsonrpc.Client, blockNum uint
 }
 
 func (s *LogsService) filterLogsVerification(clientL1 *jsonrpc.Client, blockNum uint64) error {
-	fromBlock := fmt.Sprintf("0x%X", blockNum-20000)
-	toBlock := "latest"
-	address := interface{}(s.Config.Chains[ActiveChainConfigName].RollupManagerAddress)
-	topics := []interface{}{
-		s.Config.Chains[ActiveChainConfigName].TopicsVerification,
+	latestBlock := big.NewInt(int64(blockNum))
+	blockRange := big.NewInt(10000)
+	var foundLog *jsonrpc.Log
+
+	for {
+		from := new(big.Int).Sub(latestBlock, blockRange)
+		if from.Cmp(big.NewInt(0)) == -1 {
+			from = big.NewInt(0)
+		}
+
+		fromBlock := fmt.Sprintf("0x%X", from)
+		toBlock := "latest"
+		address := interface{}(s.Config.Chains[ActiveChainConfigName].RollupAddress)
+		topics := []interface{}{
+			s.Config.Chains[ActiveChainConfigName].TopicsVerification,
+		}
+
+		query := jsonrpc.LogQuery{
+			FromBlock: &fromBlock,
+			ToBlock:   &toBlock,
+			Address:   &address,
+			Topics:    &topics,
+		}
+
+		logs, err := clientL1.EthGetLogs(query)
+		if err != nil {
+			return fmt.Errorf("error getting logs: %w", err)
+		}
+
+		if len(logs) > 0 {
+			fmt.Println("Found logs.")
+			foundLog = &logs[len(logs)-1]
+			break
+		}
+
+		latestBlock = new(big.Int).Sub(from, big.NewInt(1))
+		if latestBlock.Cmp(big.NewInt(0)) == -1 || from.Cmp(big.NewInt(0)) == 0 {
+			fmt.Println("No logs found.")
+			return nil
+		}
+
+		fmt.Println("No logs found. Continuing to search.")
 	}
 
-	query := jsonrpc.LogQuery{
-		FromBlock: &fromBlock,
-		ToBlock:   &toBlock,
-		Address:   &address,
-		Topics:    &topics,
-	}
-
-	logs, err := clientL1.EthGetLogs(query)
-	if err != nil {
-		return fmt.Errorf("error getting logs: %w", err)
-	}
-
-	if len(logs) == 0 {
-		return nil
-	}
-
-	verifiedBatch, err := hexadecimal.HashToUint64(logs[0].Topics[1])
-	if err != nil {
-		return fmt.Errorf("error getting highest sequenced batch: %w", err)
+	var verifiedBatch uint64
+	if foundLog != nil {
+		fmt.Printf("Found log: %+v\n", *foundLog)
+		if len(foundLog.Topics) >= 2 {
+			verify, err := hexadecimal.HashToUint64(foundLog.Topics[1])
+			if err != nil {
+				return fmt.Errorf("error getting highest sequenced batch: %w", err)
+			}
+			verifiedBatch = verify
+		} else {
+			fmt.Println("The found log does not contain a second topic.")
+		}
+	} else {
+		fmt.Println("No logs found.")
 	}
 
 	if verifiedBatch > s.HighestVerifiedBatch {
