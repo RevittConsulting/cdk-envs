@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/iden3/go-iden3-crypto/keccak256"
@@ -117,9 +116,12 @@ func CompareValuesString(vlockNum, ts string, ger common.Hash) error {
 
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	var httpResp GerHTTPResponse
-	json.Unmarshal(body, &httpResp)
+	err = json.Unmarshal(body, &httpResp)
+	if err != nil {
+		return err
+	}
 
 	rpcTs := httpResp.Result
 

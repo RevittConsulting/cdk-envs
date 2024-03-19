@@ -4,11 +4,11 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/RevittConsulting/cdk-envs/internal/datastream/datastream/types"
 	"net"
 	"reflect"
 	"sync/atomic"
 	"time"
-	"github.com/RevittConsulting/cdk-envs/internal/datastream/datastream/types"
 )
 
 type StreamType uint64
@@ -227,9 +227,9 @@ func (c *StreamClient) initiateDownloadBookmark(bookmark []byte) error {
 }
 
 // runs the prerequisites for entries download
-func (c *StreamClient) initiateDownload(fromEntry uint64) error {
+func (c *StreamClient) InitiateDownload(fromEntry uint64) error {
 	// send start command
-	if err := c.sendStartCmd(fromEntry); err != nil {
+	if err := c.SendStartCmd(fromEntry); err != nil {
 		return fmt.Errorf("send start command error: %v", err)
 	}
 

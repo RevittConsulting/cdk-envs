@@ -48,9 +48,9 @@ func (c *StreamClient) sendStartBookmarkCmd(bookmark []byte) error {
 	return nil
 }
 
-// sendStartCmd sends a start command to the server, indicating
+// SendStartCmd sends a start command to the server, indicating
 // that the client wishes to start streaming from the given entry number.
-func (c *StreamClient) sendStartCmd(from uint64) error {
+func (c *StreamClient) SendStartCmd(from uint64) error {
 	err := c.sendCommand(CmdStart)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (c *StreamClient) sendStartCmd(from uint64) error {
 }
 
 // sendHeaderCmd sends the header command to the server.
-func (c *StreamClient) sendStopCmd() error {
+func (c *StreamClient) SendStopCmd() error {
 	err := c.sendCommand(CmdStop)
 	if err != nil {
 		return fmt.Errorf("%s %v", c.id, err)

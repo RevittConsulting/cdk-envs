@@ -7,10 +7,10 @@ import (
 	"net"
 	"testing"
 
+	"github.com/RevittConsulting/cdk-envs/internal/datastream/datastream/types"
 	"github.com/ledgerwatch/erigon-lib/common"
 	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/assert"
-	"github.com/RevittConsulting/cdk-envs/internal/datastream/datastream/types"
 )
 
 func Test_readHeaderEntry(t *testing.T) {
@@ -50,7 +50,10 @@ func Test_readHeaderEntry(t *testing.T) {
 		c.conn = conn
 		t.Run(testCase.name, func(t *testing.T) {
 			go func() {
-				server.Write(testCase.input)
+				_, err := server.Write(testCase.input)
+				if err != nil {
+					return
+				}
 				server.Close()
 			}()
 
@@ -114,7 +117,10 @@ func Test_readResultEntry(t *testing.T) {
 		c.conn = conn
 		t.Run(testCase.name, func(t *testing.T) {
 			go func() {
-				server.Write(testCase.input)
+				_, err := server.Write(testCase.input)
+				if err != nil {
+					return
+				}
 				server.Close()
 			}()
 
@@ -183,7 +189,10 @@ func Test_readFileEntry(t *testing.T) {
 		c.conn = conn
 		t.Run(testCase.name, func(t *testing.T) {
 			go func() {
-				server.Write(testCase.input)
+				_, err := server.Write(testCase.input)
+				if err != nil {
+					return
+				}
 				server.Close()
 			}()
 
@@ -378,7 +387,10 @@ func Test_readFullL2Blocks(t *testing.T) {
 		c.conn = conn
 		t.Run(testCase.name, func(t *testing.T) {
 			go func() {
-				server.Write(testCase.inputBytes)
+				_, err := server.Write(testCase.inputBytes)
+				if err != nil {
+					return
+				}
 				server.Close()
 			}()
 
@@ -534,7 +546,10 @@ func Test_readFullBlock(t *testing.T) {
 		c.conn = conn
 		t.Run(testCase.name, func(t *testing.T) {
 			go func() {
-				server.Write(testCase.inputBytes)
+				_, err := server.Write(testCase.inputBytes)
+				if err != nil {
+					return
+				}
 				server.Close()
 			}()
 

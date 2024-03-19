@@ -40,7 +40,10 @@ func Test_WriteFullUint64ToConn(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			go func() {
 				buffer := make([]byte, 8)
-				io.ReadFull(server, buffer)
+				_, err := io.ReadFull(server, buffer)
+				if err != nil {
+					return
+				}
 			}()
 
 			var err error
@@ -83,7 +86,10 @@ func Test_WriteFullUint32ToConn(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			go func() {
 				buffer := make([]byte, 4)
-				io.ReadFull(server, buffer)
+				_, err := io.ReadFull(server, buffer)
+				if err != nil {
+					return
+				}
 			}()
 
 			var err error
@@ -130,7 +136,10 @@ func Test_ReadBuffer(t *testing.T) {
 		server, client := net.Pipe()
 
 		go func() {
-			server.Write([]byte{1, 2, 3, 4, 5})
+			_, err := server.Write([]byte{1, 2, 3, 4, 5})
+			if err != nil {
+				return
+			}
 			server.Close()
 		}()
 

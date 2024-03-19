@@ -28,12 +28,20 @@ type GerUpdate struct {
 
 func (g *GerUpdate) EncodeToBytes() []byte {
 	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.LittleEndian, g.BatchNumber)
-	binary.Write(buf, binary.LittleEndian, g.Timestamp)
+	if err := binary.Write(buf, binary.LittleEndian, g.BatchNumber); err != nil {
+		return nil
+	}
+	if err := binary.Write(buf, binary.LittleEndian, g.Timestamp); err != nil {
+		return nil
+	}
 	buf.Write(g.GlobalExitRoot.Bytes())
 	buf.Write(g.Coinbase.Bytes())
-	binary.Write(buf, binary.LittleEndian, g.ForkId)
-	binary.Write(buf, binary.LittleEndian, g.ChainId)
+	if err := binary.Write(buf, binary.LittleEndian, g.ForkId); err != nil {
+		return nil
+	}
+	if err := binary.Write(buf, binary.LittleEndian, g.ChainId); err != nil {
+		return nil
+	}
 	buf.Write(g.StateRoot.Bytes())
 
 	return buf.Bytes()
@@ -41,12 +49,20 @@ func (g *GerUpdate) EncodeToBytes() []byte {
 
 func (g *GerUpdate) EncodeToBytesBigEndian() []byte {
 	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.BigEndian, g.BatchNumber)
-	binary.Write(buf, binary.BigEndian, g.Timestamp)
+	if err := binary.Write(buf, binary.BigEndian, g.BatchNumber); err != nil {
+		return nil
+	}
+	if err := binary.Write(buf, binary.BigEndian, g.Timestamp); err != nil {
+		return nil
+	}
 	buf.Write(g.GlobalExitRoot.Bytes())
 	buf.Write(g.Coinbase.Bytes())
-	binary.Write(buf, binary.BigEndian, g.ForkId)
-	binary.Write(buf, binary.BigEndian, g.ChainId)
+	if err := binary.Write(buf, binary.BigEndian, g.ForkId); err != nil {
+		return nil
+	}
+	if err := binary.Write(buf, binary.BigEndian, g.ChainId); err != nil {
+		return nil
+	}
 	buf.Write(g.StateRoot.Bytes())
 
 	return buf.Bytes()
