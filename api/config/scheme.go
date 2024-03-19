@@ -4,6 +4,7 @@ import (
 	"github.com/RevittConsulting/cdk-envs/internal/buckets"
 	"github.com/RevittConsulting/cdk-envs/internal/jsonrpc"
 	"github.com/RevittConsulting/cdk-envs/internal/tx"
+	"github.com/RevittConsulting/cdk-envs/internal/datastream"
 )
 
 type Config struct {
@@ -13,9 +14,10 @@ type Config struct {
 
 	RPC *jsonrpc.Config
 
-	Chains  *Chains
-	Buckets *buckets.Config
-	Tx      *tx.Config
+	Chains     *Chains
+	Buckets    *buckets.Config
+	Tx         *tx.Config
+	Datastream *datastream.Config
 
 	L1Contracts *L1Contracts
 }
