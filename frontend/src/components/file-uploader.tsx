@@ -21,7 +21,7 @@ export default function FileUploader() {
       formData.append("file", file);
 
       const response = await axios.post(
-        "http://localhost:8080/api/v1/buckets",
+        "https://localhost:8080/api/v1/buckets",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
