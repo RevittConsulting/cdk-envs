@@ -3,7 +3,18 @@
 ![CI-API](https://github.com/RevittConsulting/cdk-envs/actions/workflows/CI-API.yml/badge.svg)
 ![CI-Frontend](https://github.com/RevittConsulting/cdk-envs/actions/workflows/CI-Frontend.yml/badge.svg)
 
-cdk-envs is a dockerized app, in development.
+cdk-envs is a dockerized Polygon CDK app with a set of tools for developers.
+
+The app currently has these services:
+
+- Chains RPC API
+    - This takes all the chains in the chains.yaml file and displays them as a card on the front end. You can then run RPC calls to the chains, and it will update via websockets.
+- Datacryp
+    - This is a DB viewer for the MDBX database files that are stored in the `/data` directory. You can view the data and search through it.
+- TxSender [WIP]
+    - This is a tool that will send a transaction on a chain. It will then display the transaction hash and the receipt.
+- Datastreamer [WIP]
+    - This is under development.
 
 ***
 
@@ -17,9 +28,9 @@ cdk-envs is a dockerized app, in development.
 
 ***
 
-## Config
+## Config for chains
 
-Set up a config file in the `/api` directory of the project called chains.yaml. There is an example of this config in the root. This must be put in the api folder.
+Set up a config file in the `/api` directory of the project called chains.yaml. There is an example of this config in the root. This must be put in the api folder. Add any amount of chains to this file.
 
 ```yaml
 Chains:
@@ -48,13 +59,19 @@ Chains:
 
 ***
 
+## Datacryp
+
+Datacryp is a frontend tool that allows you to perform various operations on the MDBX database files that are stored in the `/data` directory. You can view the data and search through it.
+
+To set up your data, you must create a `/data` directory in the root of the project. You can then add your MDBX files to this directory. The files must be named in the format `mdbx.dat`. You can create folders within that for the chain name for example `cardona/mdbx.dat`, then the frontend will display `cardona/mdbx.dat`.
+
+***
+
 ## Run the app
 
 ```bash
 git clone https://github.com/RevittConsulting/cdk-envs
 ```
-
-You can mount your data directory that contains your mdbx.dat data files. Do this by placing your data in `/data` in the project root.
 
 To build and run the containers:
 
