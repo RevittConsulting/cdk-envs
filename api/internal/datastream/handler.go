@@ -1,10 +1,10 @@
 package datastream
 
 import (
-	"github.com/go-chi/chi/v5"
-	"log"
-	"net/http"
 	"github.com/RevittConsulting/cdk-envs/pkg/utils"
+	"github.com/RevittConsulting/logger"
+	"github.com/go-chi/chi/v5"
+	"net/http"
 )
 
 type Handler struct {
@@ -18,7 +18,7 @@ func NewHandler(r chi.Router, s *Service) *Handler {
 }
 
 func (h *Handler) SetupRoutes(router chi.Router) {
-	log.Println("setting up routes for datastream...")
+	logger.Log().Info("setting up routes for datastream...")
 	router.Group(func(r chi.Router) {
 		r.Get("/datastream", h.GetDatastream)
 	})

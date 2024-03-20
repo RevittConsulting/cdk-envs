@@ -2,7 +2,7 @@ package ws
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/RevittConsulting/logger"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 	"log"
@@ -31,7 +31,7 @@ func NewHandler(r chi.Router, s *Service) *Handler {
 }
 
 func (h *Handler) SetupRoutes(router chi.Router) {
-	fmt.Println("setting up routes for websockets...")
+	logger.Log().Info("setting up routes for websockets...")
 	router.Group(func(r chi.Router) {
 		r.Get("/ws", h.handleWebSockets)
 	})

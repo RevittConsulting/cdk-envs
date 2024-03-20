@@ -11,6 +11,9 @@ const Nav = () => {
   const visitDatacryp = () => {
     router.push("/datacryp");
   };
+  const visitDatastream = () => {
+    router.push("/datastream");
+  };
   const visitTx = () => {
     router.push("/tx");
   };
@@ -28,6 +31,9 @@ const Nav = () => {
         </Link>
         <Button variant="outlineprimary" onClick={() => {visitDatacryp()}}>
           Datacryp
+        </Button>
+        <Button variant="outlineprimary" onClick={() => {visitDatastream()}}>
+          Datastream
         </Button>
         <Button variant="outlineprimary" onClick={() => {visitTx()}}>
           Tx

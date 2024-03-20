@@ -5,22 +5,27 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileIcon } from "@radix-ui/react-icons";
 import { useBucketContext } from "@/context/bucket-context";
-import { getData, changeDbSource } from "@/api/buckets";
+import { useApi } from "@/api/api";
 import { Database } from "lucide-react";
 
 export default function Sidebar() {
+  const api = useApi();
   const [files, setFiles] = useState<string[]>([]);
   const { selectedFile, setSelectedFile } = useBucketContext();
 
   const fetchDbFiles = async () => {
-    const response = await getData();
-    setFiles(response);
+    const res = await api.buckets.listDataSource();
+    if (res.data) {
+      console.log(res.data);
+      setFiles(res.data);
+    }
   };
 
   const setDbSource = async (file: string) => {
-    console.log(file);
-    await changeDbSource(file);
-    setSelectedFile(file);
+    const res = await api.buckets.changeDataSource(file);
+    if (res.status === 200) {
+      setSelectedFile(file);
+    }
   }
 
   useEffect(() => {
@@ -28,7 +33,7 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="w-60 h-full flex flex-col">
       <div className="py-4 flex items-center justify-center gap-2">
         <Database className="h-5 w-5" aria-hidden="true" />
         <h1 className="text-lg">Data</h1>
@@ -47,7 +52,7 @@ export default function Sidebar() {
               }
             >
               <FileIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-              {file.split("/").pop()}
+              {file.split("/").slice(-2).join("/")}
             </Button>
           ))}
         </div>

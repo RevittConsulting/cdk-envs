@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/internal/buckets/db/mdbx"
 	"github.com/RevittConsulting/cdk-envs/internal/types"
-	"github.com/RevittConsulting/cdk-envs/pkg/utils"
 	"io/fs"
 	"math/big"
 	"os"
@@ -19,7 +18,7 @@ type IDatabase interface {
 	ListBuckets() ([]string, error)
 	CountKeys(bucketName string) (uint64, error)
 	CountKeysOfLength(bucketName string, length uint64) (uint64, []string, error)
-	FindByKey(bucketName string, key []byte) ([]byte, error)
+	FindByKey(bucketName string, key []byte) ([][]byte, error)
 	FindByValue(bucketName string, value []byte) ([][]byte, error)
 	Read(bucketName string, take, offset uint64) ([]types.KeyValuePair, error)
 }
@@ -117,36 +116,40 @@ func (s *HttpService) KeysCountLength(name string, length uint64) (uint64, []str
 	return count, keys, nil
 }
 
-func (s *HttpService) LookupByKey(bucketName string, searchKey string) ([]byte, error) {
-	var foundValue []byte
-	if strings.HasPrefix(searchKey, "0x") {
-		searchKey = searchKey[2:]
-		bytes, err := hex.DecodeString(searchKey)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return nil, err
-		}
-		foundValue, _ = s.Db.FindByKey(bucketName, bytes)
-	} else {
-		num := new(big.Int)
-		num, ok := num.SetString(searchKey, 16)
-		if !ok {
-			return nil, fmt.Errorf("error parsing the number")
-		}
-		//num, err := strconv.ParseUint(searchKey, 10, 64)
-		//if err != nil {
-		//	fmt.Println("Error:", err)
-		//	return nil, err
-		//}
-		//skuint := utils.Uint64ToBytes(num)
-		bytes := utils.BigIntToBytes(num)
-		foundValue, _ = s.Db.FindByKey(bucketName, bytes)
+func (s *HttpService) SearchByKey(bucketName string, searchKey string) ([]string, error) {
+	var key []byte
+	var err error
+
+	searchKey = strings.TrimPrefix(searchKey, "0x")
+
+	key, err = hex.DecodeString(searchKey)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
 	}
-	return foundValue, nil
+
+	foundValues, err := s.Db.FindByKey(bucketName, key)
+	if err != nil {
+		return nil, err
+	}
+
+	hexValues := make([]string, 0)
+	for _, value := range foundValues {
+		hexValues = append(hexValues, hex.EncodeToString(value))
+	}
+
+	return hexValues, nil
 }
 
-func (s *HttpService) SearchByValue(bucketName string, num uint64) ([]string, error) {
-	foundKeys, _ := s.Db.FindByValue(bucketName, utils.Uint64ToBytes(num))
+func (s *HttpService) SearchByValue(bucketName string, value string) ([]string, error) {
+	bigInt := new(big.Int)
+	bigInt, ok := bigInt.SetString(value, 16)
+	if !ok {
+		return nil, fmt.Errorf("error parsing the number")
+	}
+	bytes := bigInt.Bytes()
+
+	foundKeys, _ := s.Db.FindByValue(bucketName, bytes)
 	hexKeys := make([]string, 0)
 
 	for _, key := range foundKeys {

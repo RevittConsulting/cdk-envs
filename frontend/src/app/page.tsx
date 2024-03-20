@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import ChainCard from "@/components/chain-card";
 import { Chain, ChainData } from "../types/chain";
-import { getChains, stopAllServices } from "@/api/chain";
+import { useApi } from "@/api/api";
 import { useChainContext } from "@/context/chain-context";
 
 export default function Home() {
+  const api = useApi();
   const [chains, setChains] = useState<Chain[]>([]);
   const { activeChain, setActiveChain } = useChainContext();
 
@@ -42,8 +43,8 @@ export default function Home() {
   }, []);
 
   const cleanup = async () => {
-    const res = await stopAllServices();
-    if (res.status >= 200 && res.status < 300) {
+    const res = await api.chain.stopAllServices();
+    if (res.status && res.status >= 200 && res.status < 300) {
       setActiveChain(null);
     }
   };
@@ -52,8 +53,8 @@ export default function Home() {
     cleanup();
 
     const fetchChains = async () => {
-      const res = await getChains();
-      if (res.status >= 200 && res.status < 300) {
+      const res = await api.chain.getChains();
+      if (res.status && res.data && res.status >= 200 && res.status < 300) {
         setChains(res.data);
       } else {
         console.error("Error fetching chains");

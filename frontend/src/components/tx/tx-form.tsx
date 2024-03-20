@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { submitTx } from "@/api/tx";
+import { useApi } from "@/api/api";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
@@ -19,6 +19,7 @@ export interface TxFormData {
 }
 
 export default function TxForm() {
+  const api = useApi();
   const { setResponse } = useTxContext();
   const [formData, setFormData] = useState<TxFormData>({
     host: "http://localhost:8545",
@@ -41,12 +42,11 @@ export default function TxForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const response = await submitTx(formData);
-    console.log(response.data);
-    if (response.data.output === undefined || response.data.output === null) {
-      setResponse(response.data.error);
-    } else {
-      setResponse(response.data.output);
+    const res = await api.tx.submitTx(formData);
+    if (res.data?.output) {
+      setResponse(res.data.output);
+    } else if (res.data?.error) {
+      setResponse(res.data.error);
     }
   };
 

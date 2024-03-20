@@ -1,8 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Count } from "@/types/buckets";
-import { getBuckets, getCount, loadPages } from "@/api/buckets";
+import { useApi } from "@/api/api";
 import { useBucketContext } from "@/context/bucket-context";
 import {
   Select,
@@ -13,27 +11,92 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "@radix-ui/react-icons";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RefreshCcw } from "lucide-react";
 
 export default function DatacrypHeader() {
-  const { selectedFile, selectedBucket, setSelectedBucket, setPages } =
-    useBucketContext();
-  const [buckets, setBuckets] = useState<string[]>([]);
-  const [count, setCount] = useState<Count>({ count: 0 });
+  const api = useApi();
+  const {
+    selectedFile,
+    selectedBucket,
+    setSelectedBucket,
+    setPages,
+    buckets,
+    setBuckets,
+    count,
+    setCount,
+    resultsInput,
+    setResultsInput,
+    pageNumInput,
+    setPageNumInput,
+  } = useBucketContext();
 
   const fetchBuckets = async () => {
-    const data = await getBuckets();
-    setBuckets(data);
+    const res = await api.buckets.getBuckets();
+    if (res.data) {
+      setBuckets(res.data);
+    }
   };
 
   const setBucket = async (bucket: string) => {
     setSelectedBucket(bucket);
+    setPages([]);
+    setCount({ count: 0 });
 
-    const countRes = await getCount(bucket);
-    setCount(countRes);
+    const countRes = await api.buckets.getKeysCount(bucket);
+    if (countRes.data) {
+      setCount(countRes.data);
+    }
 
-    const pagesRes = await loadPages(bucket, 1, 100);
-    setPages(pagesRes);
-  }
+    const pagesRes = await api.buckets.getPages(
+      bucket,
+      Number(pageNumInput),
+      Number(resultsInput)
+    );
+    if (pagesRes.data) {
+      setPages(pagesRes.data);
+    }
+  };
+
+  const getResults = async () => {
+    const pagesRes = await api.buckets.getPages(
+      selectedBucket,
+      Number(pageNumInput),
+      Number(resultsInput)
+    );
+    if (pagesRes.data) {
+      setPages(pagesRes.data);
+    } else {
+      setPages([]);
+    }
+  };
+
+  const handlePageNumChange = async (pageNum: string) => {
+    setPageNumInput(pageNum);
+
+    const pagesRes = await api.buckets.getPages(
+      selectedBucket,
+      Number(pageNum),
+      Number(resultsInput)
+    );
+    if (pagesRes.data) {
+      setPages(pagesRes.data);
+    }
+  };
+
+  const handleResultsChange = async (results: string) => {
+    setResultsInput(results);
+
+    const pagesRes = await api.buckets.getPages(
+      selectedBucket,
+      Number(pageNumInput),
+      Number(results)
+    );
+    if (pagesRes.data) {
+      setPages(pagesRes.data);
+    }
+  };
 
   return (
     <div className="flex sm:flex-row flex-col items-center justify-between gap-4 w-full">
@@ -54,7 +117,6 @@ export default function DatacrypHeader() {
           )}
         </div>
       </div>
-
       <div className="w-full">
         <div className="flex flex-row gap-4 justify-center">
           <Button disabled={selectedFile == ""} onClick={fetchBuckets}>
@@ -75,9 +137,44 @@ export default function DatacrypHeader() {
               ))}
             </SelectContent>
           </Select>
+          <div className="flex items-center justify-center gap-2">
+            <Label>Page</Label>
+            <Input
+              type="number"
+              disabled={selectedBucket == ""}
+              value={pageNumInput}
+              onChange={(e) => handlePageNumChange(e.target.value)}
+              className="w-20"
+              min={0}
+              max={Math.ceil(count.count / Number(resultsInput))}
+            />
+          </div>
+          <div className="flex items-center justify-center gap-2">
+            <Label>Results</Label>
+            <Input
+              type="number"
+              disabled={selectedBucket == ""}
+              value={resultsInput}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (value <= 200) {
+                  handleResultsChange(e.target.value);
+                }
+              }}
+              className="w-20"
+              min={1}
+              max={200}
+            />
+          </div>
+          <Button 
+          variant="outline"
+          onClick={getResults}
+          disabled={selectedBucket == ""}
+          >
+            <RefreshCcw className="w-4" />
+          </Button>
         </div>
       </div>
-
       <div className="w-full">
         <div className="flex justify-center md:justify-end gap-4 items-center">
           <div className="border p-2 px-3 rounded-md">
