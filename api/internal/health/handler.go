@@ -3,6 +3,7 @@ package health
 import (
 	"fmt"
 	"github.com/RevittConsulting/cdk-envs/pkg/atomics"
+	"github.com/RevittConsulting/logger"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 )
@@ -20,7 +21,7 @@ func NewHandler(r chi.Router, shuttingDown *atomics.AtomicBool) *Handler {
 }
 
 func (h *Handler) SetupRoutes(router chi.Router) {
-	fmt.Println("setting up routes for health")
+	logger.Log().Info("setting up routes for health...")
 	router.Group(func(r chi.Router) {
 		r.Get("/health", h.GetHealth)
 	})

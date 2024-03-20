@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { Chain, ChainData } from "@/types/chain";
 import { Button } from "@/components/ui/button";
-import { restartServices, stopAllServices } from "@/api/chain";
+import { useApi } from "@/api/api";
 import { PlayIcon, StopIcon } from "@heroicons/react/16/solid";
 import { Link } from "lucide-react";
 import { useChainContext } from "@/context/chain-context";
@@ -17,6 +17,7 @@ export default function ChainCard({
   chain: Chain;
   data: ChainData;
 }) {
+  const api = useApi();
   const { activeChain, setActiveChain } = useChainContext();
   const [mostRecentL1Block, setMostRecentL1Block] = useState<number>(0);
   const [mostRecentL2Batch, setMostRecentL2Batch] = useState<number>(0);
@@ -37,10 +38,10 @@ export default function ChainCard({
   }, [data]);
 
   const startServices = async () => {
-    await stopAllServices();
+    await api.chain.stopAllServices();
     console.log("Starting RPC services for", chain.serviceName);
-    const response = await restartServices(chain.serviceName);
-    if (response.status >= 200 && response.status < 300) {
+    const response = await api.chain.restartServices(chain.serviceName);
+    if (response.status && response.status >= 200 && response.status < 300) {
       setActiveChain(chain.serviceName);
     }
     console.log(response);
@@ -48,8 +49,8 @@ export default function ChainCard({
 
   const stopServices = async () => {
     console.log("Stopping RPC services for", chain.serviceName);
-    const response = await stopAllServices();
-    if (response.status >= 200 && response.status < 300) {
+    const response = await api.chain.stopAllServices();
+    if (response.status && response.status >= 200 && response.status < 300) {
       setActiveChain(null);
     }
     console.log(response);

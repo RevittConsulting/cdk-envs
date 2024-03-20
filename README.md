@@ -1,7 +1,7 @@
 # cdk-envs
 
 ![CI-API](https://github.com/RevittConsulting/cdk-envs/actions/workflows/CI-API.yml/badge.svg)
-![CI-API](https://github.com/RevittConsulting/cdk-envs/actions/workflows/CI-Frontend.yml/badge.svg)
+![CI-Frontend](https://github.com/RevittConsulting/cdk-envs/actions/workflows/CI-Frontend.yml/badge.svg)
 
 cdk-envs is a dockerized app, in development.
 

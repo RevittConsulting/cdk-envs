@@ -18,6 +18,12 @@ const config = {
       },
     },
     extend: {
+      width: {
+        '1/24': '4.166667%',
+        '11/24': '45.833333%',
+        '10/24': "41.666667%",
+        '12/24': "50%",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

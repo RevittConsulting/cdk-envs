@@ -6,6 +6,7 @@ import Nav from "@/components/nav";
 import { BucketProvider } from "@/context/bucket-context";
 import { ChainProvider } from "@/context/chain-context";
 import { TxProvider } from "@/context/tx-context";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,12 +31,18 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <BucketProvider>
-          <ChainProvider>
-          <TxProvider>
-            <Nav />
-            {children}
-          </TxProvider>
-          </ChainProvider>
+            <ChainProvider>
+              <TxProvider>
+                <TooltipProvider>
+                  <div className="flex flex-col h-full">
+                    <Nav />
+                    <main className="fex-1 overflow-auto h-full">
+                      {children}
+                    </main>
+                  </div>
+                </TooltipProvider>
+              </TxProvider>
+            </ChainProvider>
           </BucketProvider>
         </ThemeProvider>
       </body>

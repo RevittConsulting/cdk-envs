@@ -1,10 +1,10 @@
 package buckets
 
 import (
-	"fmt"
+	"github.com/RevittConsulting/cdk-envs/internal/types"
 	"github.com/RevittConsulting/cdk-envs/pkg/utils"
+	"github.com/RevittConsulting/logger"
 	"github.com/go-chi/chi/v5"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -22,16 +22,19 @@ func NewHandler(r chi.Router, s *HttpService) *HttpHandler {
 }
 
 func (h *HttpHandler) SetupRoutes(router chi.Router) {
-	log.Println("setting up routes for buckets...")
+	logger.Log().Info("setting up routes for buckets...")
 	router.Group(func(r chi.Router) {
-		r.Post("/buckets", h.ChangeDB)
-		r.Get("/buckets/data", h.listDataSource)
-		r.Get("/buckets", h.listBuckets)
-		r.Get("/buckets/{bucketName}/count", h.keysCount)
-		r.Get("/buckets/{bucketName}/pages/{pageNum}/{pageLen}", h.getPage)
+		r.Post("/buckets/data/change", h.ChangeDB)
+		r.Get("/buckets/data/list", h.listDataSource)
+
+		r.Get("/buckets", h.getBuckets)
+		r.Get("/buckets/{bucketName}/count", h.getKeysCount)
+		r.Get("/buckets/{bucketName}/pages/{pageNum}/{pageLen}", h.getPages)
+
 		r.Get("/buckets/{bucketName}/count/{length}", h.countLength)
 		r.Get("/buckets/{bucketName}/count/{length}/keys", h.keysCountLength)
-		r.Get("/buckets/{bucketName}/keys/{key}", h.lookupByKey)
+
+		r.Get("/buckets/{bucketName}/keys/{key}", h.searchByKey)
 		r.Get("/buckets/{bucketName}/values/{value}", h.searchByValue)
 	})
 }
@@ -43,13 +46,12 @@ func (h *HttpHandler) ChangeDB(w http.ResponseWriter, r *http.Request) {
 		utils.WriteErr(w, err, http.StatusBadRequest)
 		return
 	}
-	if err := h.s.ChangeDB(req.Path); err != nil {
+	if err = h.s.ChangeDB(req.Path); err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	utils.WriteJSON(w, map[string]string{"message": "Database changed"})
-
 }
 
 func (h *HttpHandler) listDataSource(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +63,7 @@ func (h *HttpHandler) listDataSource(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, dataSource)
 }
 
-func (h *HttpHandler) listBuckets(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) getBuckets(w http.ResponseWriter, r *http.Request) {
 	buckets, err := h.s.ListBuckets()
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
@@ -71,7 +73,7 @@ func (h *HttpHandler) listBuckets(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, buckets)
 }
 
-func (h *HttpHandler) keysCount(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) getKeysCount(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 
 	count, err := h.s.KeysCount(bucketName)
@@ -85,7 +87,7 @@ func (h *HttpHandler) keysCount(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, response)
 }
 
-func (h *HttpHandler) getPage(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) getPages(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 	pageNum, err := strconv.Atoi(chi.URLParam(r, "pageNum"))
 	if err != nil {
@@ -96,6 +98,12 @@ func (h *HttpHandler) getPage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Invalid page length", http.StatusBadRequest)
 		return
+	}
+
+	maxPageLen := 200
+
+	if pageLen > maxPageLen {
+		pageLen = maxPageLen
 	}
 
 	pages, err := h.s.GetPage(bucketName, pageNum, pageLen)
@@ -145,43 +153,48 @@ func (h *HttpHandler) keysCountLength(w http.ResponseWriter, r *http.Request) {
 	utils.WriteJSON(w, response)
 }
 
-func (h *HttpHandler) lookupByKey(w http.ResponseWriter, r *http.Request) {
+func (h *HttpHandler) searchByKey(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 	searchKey := chi.URLParam(r, "key")
 
-	foundValue, err := h.s.LookupByKey(bucketName, searchKey)
+	foundValues, err := h.s.SearchByKey(bucketName, searchKey)
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	if foundValue == nil {
-		http.Error(w, "Key not found", http.StatusNotFound)
+	if foundValues == nil {
+		http.Error(w, "no keys found", http.StatusNotFound)
 		return
 	}
 
-	response := map[string]string{"value": fmt.Sprintf("%x", foundValue)}
+	var res []types.KeyValuePairString
+	for _, value := range foundValues {
+		res = append(res, types.KeyValuePairString{Key: searchKey, Value: value})
+	}
 
-	utils.WriteJSON(w, response)
+	utils.WriteJSON(w, res)
 }
 
 func (h *HttpHandler) searchByValue(w http.ResponseWriter, r *http.Request) {
 	bucketName := chi.URLParam(r, "bucketName")
 	searchValue := chi.URLParam(r, "value")
 
-	num, err := strconv.ParseUint(searchValue, 16, 64)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	foundKeys, err := h.s.SearchByValue(bucketName, num)
+	foundValues, err := h.s.SearchByValue(bucketName, searchValue)
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	response := map[string][]string{"keys": foundKeys}
+	if foundValues == nil {
+		http.Error(w, "no values found", http.StatusNotFound)
+		return
+	}
 
-	utils.WriteJSON(w, response)
+	var res []types.KeyValuePairString
+	for _, key := range foundValues {
+		res = append(res, types.KeyValuePairString{Key: key, Value: searchValue})
+	}
+
+	utils.WriteJSON(w, res)
 }

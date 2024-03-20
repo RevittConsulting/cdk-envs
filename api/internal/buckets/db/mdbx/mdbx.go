@@ -74,24 +74,36 @@ func (m *MDBX) CountKeys(bucketName string) (uint64, error) {
 	return count, nil
 }
 
-func (m *MDBX) FindByKey(bucketName string, key []byte) ([]byte, error) {
+func (m *MDBX) FindByKey(bucketName string, key []byte) ([][]byte, error) {
 	txn, err := m.env.BeginTxn(nil, mdbx.Readonly)
 	if err != nil {
 		return nil, err
 	}
 	defer txn.Abort()
 
-	dbi, err := txn.OpenDBI(bucketName, 0, nil, nil)
+	dbi, err := txn.OpenDBISimple(bucketName, 0)
 	if err != nil {
 		return nil, err
 	}
 	defer m.env.CloseDBI(dbi)
 
-	val, err := txn.Get(dbi, key)
+	cursor, err := txn.OpenCursor(dbi)
 	if err != nil {
 		return nil, err
 	}
-	return val, nil
+	defer cursor.Close()
+
+	var values [][]byte
+	for k, v, err := cursor.Get(nil, nil, mdbx.First); err == nil; k, v, err = cursor.Get(nil, nil, mdbx.Next) {
+		if utils.BytesEqual(k, key) {
+			values = append(values, v)
+		}
+	}
+	if err != nil && !errors.Is(err, mdbx.NotFound) {
+		return nil, err
+	}
+
+	return values, nil
 }
 
 func (m *MDBX) FindByValue(bucketName string, value []byte) ([][]byte, error) {
