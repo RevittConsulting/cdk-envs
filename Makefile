@@ -1,9 +1,9 @@
 default: all
 
-all: cdk-envs
+all: cdu
 
-.PHONY: cdk-envs
-cdk-envs:
-	@echo "Building APP"
+.PHONY: cdu
+cdu:
+	@echo "Building Chain Dev Utils..."
 	@export DATA_DIR_HOST=$(data) ; \
 	docker compose build && docker compose up -d

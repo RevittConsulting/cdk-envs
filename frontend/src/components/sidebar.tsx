@@ -28,6 +28,7 @@ export default function Sidebar() {
     }
   }
 
+  
   useEffect(() => {
     fetchDbFiles();
   }, []);
@@ -38,25 +39,28 @@ export default function Sidebar() {
         <Database className="h-5 w-5" aria-hidden="true" />
         <h1 className="text-lg">Data</h1>
       </div>
-      <ScrollArea className="p-4 h-full">
-        <div className="flex flex-col gap-2 mb-20">
+      <ScrollArea className="p-4 h-full w-full">
+        <div className="flex flex-col gap-2 mb-20 w-full">
           {files.map((file, index) => (
             <Button
               key={index}
               variant="ghost"
               onClick={() => setDbSource(file)}
-              className={
-                selectedFile === file
+              className={`
+                ${selectedFile === file
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : ""
-              }
+                  : ""} w-full break-words flex flex-wrap h-full
+              `}
             >
-              <FileIcon className="h-4 w-4 mr-2" aria-hidden="true" />
-              {file.split("/").slice(-2).join("/")}
+              <div className="flex flex-col">
+                <p className="break-words whitespace-normal">{file.split("/").slice(-3, -1).join(" ")}</p>
+                <div className="flex items-center justify-center"><FileIcon className="h-4 w-4 mr-2" aria-hidden="true" /><p className="break-words whitespace-normal">{file.split("/").pop()}</p></div>
+              </div>
             </Button>
           ))}
         </div>
       </ScrollArea>
     </div>
-  );
+);
+
 }
