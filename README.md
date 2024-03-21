@@ -18,6 +18,20 @@ The app currently has these services:
 
 ***
 
+## Quick Start
+
+```bash
+git clone https://github.com/RevittConsulting/chain-dev-utils
+```
+
+To build and run the containers with a path to your data directory:
+
+```bash
+make cdu data=/Path/to/your/data
+```
+
+***
+
 ## Pre-requisites / Dependencies
 
 - [Make](https://www.gnu.org/software/make/)
@@ -64,19 +78,5 @@ Chains:
 MDBX viewer is a frontend tool that allows you to perform various operations on the MDBX database files that are stored in your data directory that you can mount through the argument `data`. You can view the data and search through it.
 
 To set up your data, you must build CDU with the argument `data=/Path/to/your/data`.
-
-***
-
-## Run the app
-
-```bash
-git clone https://github.com/RevittConsulting/chain-dev-utils
-```
-
-To build and run the containers with a path to your data directory:
-
-```bash
-make cdu data=/Path/to/your/data
-```
 
 ***

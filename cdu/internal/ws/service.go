@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"errors"
 	"github.com/RevittConsulting/chain-dev-utils/internal/chains/chain_services"
 )
 
@@ -12,6 +13,10 @@ func NewService(Services *chain_services.Runtime) *Service {
 	return &Service{
 		Services: Services,
 	}
+}
+
+func (s *Service) StopServices() error {
+	return s.Services.StopServices()
 }
 
 func (s *Service) PollChainData() (*ChainData, error) {
@@ -35,5 +40,12 @@ func (s *Service) PollChainData() (*ChainData, error) {
 		}
 	}
 
+	// check to see if services are running, if not return error
+	if len(activeServices) == 0 {
+		return nil, errors.New("no services running")
+	}
+
 	return chainData, nil
 }
+
+// Todo: add a start for services if the frontend is expecting chain data to be polled

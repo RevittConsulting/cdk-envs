@@ -44,6 +44,13 @@ func (h *Handler) handleWebSockets(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
+	// stop all services when the connection is closed
+	defer func() {
+		if err = h.s.StopServices(); err != nil {
+			log.Println("error stopping services:", err)
+		}
+	}()
+
 	for {
 		chainData, err := h.s.PollChainData()
 		if err != nil {
