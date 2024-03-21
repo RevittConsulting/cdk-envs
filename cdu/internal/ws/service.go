@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"errors"
 	"github.com/RevittConsulting/chain-dev-utils/internal/chains/chain_services"
 )
 
@@ -38,11 +37,6 @@ func (s *Service) PollChainData() (*ChainData, error) {
 			chainData.MostRecentL2Block = v.GetMostRecentL2Block()
 			chainData.DataStreamerStatus = v.GetDataStreamerStatus()
 		}
-	}
-
-	// check to see if services are running, if not return error
-	if len(activeServices) == 0 {
-		return nil, errors.New("no services running")
 	}
 
 	return chainData, nil
