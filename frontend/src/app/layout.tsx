@@ -11,8 +11,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "cdk-envs",
-  description: "cdk-envs",
+  title: "Chain Dev Utils",
+  description: "Chain Development Utilities",
 };
 
 export default function RootLayout({
