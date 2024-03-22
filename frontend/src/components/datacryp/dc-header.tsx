@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { FileIcon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RefreshCcw } from "lucide-react";
 
 export default function DatacrypHeader() {
   const api = useApi();
@@ -31,13 +30,6 @@ export default function DatacrypHeader() {
     pageNumInput,
     setPageNumInput,
   } = useBucketContext();
-
-  const fetchBuckets = async () => {
-    const res = await api.buckets.getBuckets();
-    if (res.data) {
-      setBuckets(res.data);
-    }
-  };
 
   const setBucket = async (bucket: string) => {
     setSelectedBucket(bucket);
@@ -107,7 +99,7 @@ export default function DatacrypHeader() {
               <h1 className="flex items-center gap-1">
                 <span className="mr-2">Data:</span>
                 <FileIcon className="h-4 w-4" aria-hidden="true" />{" "}
-                {selectedFile.split("/").pop()}
+                {selectedFile.split("/").slice(-2).join("/")}
               </h1>
             </div>
           ) : (
@@ -119,9 +111,6 @@ export default function DatacrypHeader() {
       </div>
       <div className="w-full">
         <div className="flex flex-row gap-4 justify-center">
-          <Button disabled={selectedFile == ""} onClick={fetchBuckets}>
-            Load Buckets
-          </Button>
           <Select
             onValueChange={(value) => setBucket(value)}
             disabled={buckets.length < 1}
@@ -138,7 +127,9 @@ export default function DatacrypHeader() {
             </SelectContent>
           </Select>
           <div className="flex items-center justify-center gap-2">
-            <Label>Page</Label>
+            <Label className={selectedBucket == "" ? "opacity-50" : ""}>
+              Page
+            </Label>
             <Input
               type="number"
               disabled={selectedBucket == ""}
@@ -150,7 +141,9 @@ export default function DatacrypHeader() {
             />
           </div>
           <div className="flex items-center justify-center gap-2">
-            <Label>Results</Label>
+            <Label className={selectedBucket == "" ? "opacity-50" : ""}>
+              Results
+            </Label>
             <Input
               type="number"
               disabled={selectedBucket == ""}
@@ -166,13 +159,13 @@ export default function DatacrypHeader() {
               max={200}
             />
           </div>
-          <Button 
-          variant="outline"
-          onClick={getResults}
-          disabled={selectedBucket == ""}
+          {/* <Button
+            variant="outline"
+            onClick={getResults}
+            disabled={selectedBucket == ""}
           >
-            <RefreshCcw className="w-4" />
-          </Button>
+            
+          </Button> */}
         </div>
       </div>
       <div className="w-full">

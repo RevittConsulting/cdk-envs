@@ -26,16 +26,19 @@ func (h *HttpHandler) SetupRoutes(router chi.Router) {
 	router.Group(func(r chi.Router) {
 		r.Post("/buckets/data/change", h.ChangeDB)
 		r.Get("/buckets/data/list", h.listDataSource)
-
 		r.Get("/buckets", h.getBuckets)
-		r.Get("/buckets/{bucketName}/count", h.getKeysCount)
-		r.Get("/buckets/{bucketName}/pages/{pageNum}/{pageLen}", h.getPages)
 
-		r.Get("/buckets/{bucketName}/count/{length}", h.countLength)
-		r.Get("/buckets/{bucketName}/count/{length}/keys", h.keysCountLength)
+		r.Route("/buckets/{bucketName}", func(r chi.Router) {
+			r.Use(h.TryGetBucket)
 
-		r.Get("/buckets/{bucketName}/keys/{key}", h.searchByKey)
-		r.Get("/buckets/{bucketName}/values/{value}", h.searchByValue)
+			r.Get("/count", h.getKeysCount)
+			r.Get("/pages/{pageNum}/{pageLen}", h.getPages)
+			r.Get("/count/{length}", h.countLength)
+			r.Get("/count/{length}/keys", h.keysCountLength)
+			r.Get("/count/{length}/values", h.valuesCountLength)
+			r.Get("/keys/{key}", h.searchByKey)
+			r.Get("/values/{value}", h.searchByValue)
+		})
 	})
 }
 
@@ -74,9 +77,7 @@ func (h *HttpHandler) getBuckets(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HttpHandler) getKeysCount(w http.ResponseWriter, r *http.Request) {
-	bucketName := chi.URLParam(r, "bucketName")
-
-	count, err := h.s.KeysCount(bucketName)
+	count, err := h.s.KeysCount(r.Context())
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
 		return
@@ -88,7 +89,6 @@ func (h *HttpHandler) getKeysCount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HttpHandler) getPages(w http.ResponseWriter, r *http.Request) {
-	bucketName := chi.URLParam(r, "bucketName")
 	pageNum, err := strconv.Atoi(chi.URLParam(r, "pageNum"))
 	if err != nil {
 		http.Error(w, "Invalid page number", http.StatusBadRequest)
@@ -106,7 +106,7 @@ func (h *HttpHandler) getPages(w http.ResponseWriter, r *http.Request) {
 		pageLen = maxPageLen
 	}
 
-	pages, err := h.s.GetPage(bucketName, pageNum, pageLen)
+	pages, err := h.s.GetPage(r.Context(), pageNum, pageLen)
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
 		return
@@ -116,14 +116,13 @@ func (h *HttpHandler) getPages(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HttpHandler) countLength(w http.ResponseWriter, r *http.Request) {
-	bucketName := chi.URLParam(r, "bucketName")
 	length, err := strconv.ParseUint(chi.URLParam(r, "length"), 10, 64)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	count, _, err := h.s.KeysCountLength(bucketName, length)
+	count, _, err := h.s.KeysCountLength(r.Context(), length)
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
 		return
@@ -135,29 +134,45 @@ func (h *HttpHandler) countLength(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HttpHandler) keysCountLength(w http.ResponseWriter, r *http.Request) {
-	bucketName := chi.URLParam(r, "bucketName")
 	length, err := strconv.ParseUint(chi.URLParam(r, "length"), 10, 64)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	count, keys, err := h.s.KeysCountLength(bucketName, length)
+	count, keys, err := h.s.KeysCountLength(r.Context(), length)
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	response := map[string]interface{}{"count": count, "keys": keys}
+	response := map[string]interface{}{"count": count, "kv": keys}
+
+	utils.WriteJSON(w, response)
+}
+
+func (h *HttpHandler) valuesCountLength(w http.ResponseWriter, r *http.Request) {
+	length, err := strconv.ParseUint(chi.URLParam(r, "length"), 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	count, values, err := h.s.ValuesCountLength(r.Context(), length)
+	if err != nil {
+		utils.WriteErr(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	response := map[string]interface{}{"count": count, "kv": values}
 
 	utils.WriteJSON(w, response)
 }
 
 func (h *HttpHandler) searchByKey(w http.ResponseWriter, r *http.Request) {
-	bucketName := chi.URLParam(r, "bucketName")
 	searchKey := chi.URLParam(r, "key")
 
-	foundValues, err := h.s.SearchByKey(bucketName, searchKey)
+	foundValues, err := h.s.SearchByKey(r.Context(), searchKey)
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
 		return
@@ -177,10 +192,9 @@ func (h *HttpHandler) searchByKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HttpHandler) searchByValue(w http.ResponseWriter, r *http.Request) {
-	bucketName := chi.URLParam(r, "bucketName")
 	searchValue := chi.URLParam(r, "value")
 
-	foundValues, err := h.s.SearchByValue(bucketName, searchValue)
+	foundValues, err := h.s.SearchByValue(r.Context(), searchValue)
 	if err != nil {
 		utils.WriteErr(w, err, http.StatusInternalServerError)
 		return

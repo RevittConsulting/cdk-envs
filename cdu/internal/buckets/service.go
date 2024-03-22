@@ -1,6 +1,7 @@
 package buckets
 
 import (
+	"context"
 	"encoding/hex"
 	"fmt"
 	"github.com/RevittConsulting/chain-dev-utils/internal/buckets/db/mdbx"
@@ -18,6 +19,7 @@ type IDatabase interface {
 	ListBuckets() ([]string, error)
 	CountKeys(bucketName string) (uint64, error)
 	CountKeysOfLength(bucketName string, length uint64) (uint64, []string, error)
+	CountValuesOfLength(bucketName string, length uint64) (uint64, []string, error)
 	FindByKey(bucketName string, key []byte) ([][]byte, error)
 	FindByValue(bucketName string, value []byte) ([][]byte, error)
 	Read(bucketName string, take, offset uint64) ([]types.KeyValuePair, error)
@@ -85,16 +87,18 @@ func (s *HttpService) ListBuckets() ([]string, error) {
 	return buckets, nil
 }
 
-func (s *HttpService) KeysCount(name string) (uint64, error) {
-	count, err := s.Db.CountKeys(name)
+func (s *HttpService) KeysCount(ctx context.Context) (uint64, error) {
+	bucketName := ctx.Value(BucketNameCTX).(string)
+	count, err := s.Db.CountKeys(bucketName)
 	if err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (s *HttpService) GetPage(name string, num int, pageLen int) ([]types.KeyValuePairString, error) {
-	foundData, err := s.Db.Read(name, uint64(pageLen), uint64(num))
+func (s *HttpService) GetPage(ctx context.Context, num int, pageLen int) ([]types.KeyValuePairString, error) {
+	bucketName := ctx.Value(BucketNameCTX).(string)
+	foundData, err := s.Db.Read(bucketName, uint64(pageLen), uint64(num))
 	if err != nil {
 		return nil, err
 	}
@@ -108,15 +112,26 @@ func (s *HttpService) GetPage(name string, num int, pageLen int) ([]types.KeyVal
 	return data, nil
 }
 
-func (s *HttpService) KeysCountLength(name string, length uint64) (uint64, []string, error) {
-	count, keys, err := s.Db.CountKeysOfLength(name, length)
+func (s *HttpService) KeysCountLength(ctx context.Context, length uint64) (uint64, []string, error) {
+	bucketName := ctx.Value(BucketNameCTX).(string)
+	count, keys, err := s.Db.CountKeysOfLength(bucketName, length)
 	if err != nil {
 		return 0, nil, err
 	}
 	return count, keys, nil
 }
 
-func (s *HttpService) SearchByKey(bucketName string, searchKey string) ([]string, error) {
+func (s *HttpService) ValuesCountLength(ctx context.Context, length uint64) (uint64, []string, error) {
+	bucketName := ctx.Value(BucketNameCTX).(string)
+	count, values, err := s.Db.CountValuesOfLength(bucketName, length)
+	if err != nil {
+		return 0, nil, err
+	}
+	return count, values, nil
+}
+
+func (s *HttpService) SearchByKey(ctx context.Context, searchKey string) ([]string, error) {
+	bucketName := ctx.Value(BucketNameCTX).(string)
 	var key []byte
 	var err error
 
@@ -141,7 +156,8 @@ func (s *HttpService) SearchByKey(bucketName string, searchKey string) ([]string
 	return hexValues, nil
 }
 
-func (s *HttpService) SearchByValue(bucketName string, value string) ([]string, error) {
+func (s *HttpService) SearchByValue(ctx context.Context, value string) ([]string, error) {
+	bucketName := ctx.Value(BucketNameCTX).(string)
 	bigInt := new(big.Int)
 	bigInt, ok := bigInt.SetString(value, 16)
 	if !ok {

@@ -11,7 +11,7 @@ import { Database } from "lucide-react";
 export default function Sidebar() {
   const api = useApi();
   const [files, setFiles] = useState<string[]>([]);
-  const { selectedFile, setSelectedFile } = useBucketContext();
+  const { selectedFile, setSelectedFile, setBuckets } = useBucketContext();
 
   const fetchDbFiles = async () => {
     const res = await api.buckets.listDataSource();
@@ -25,6 +25,12 @@ export default function Sidebar() {
     const res = await api.buckets.changeDataSource(file);
     if (res.status === 200) {
       setSelectedFile(file);
+      
+      const res = await api.buckets.getBuckets();
+      if (res.data) {
+        console.log(res.data);
+        setBuckets(res.data);
+      }
     }
   }
 

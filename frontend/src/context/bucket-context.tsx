@@ -5,8 +5,7 @@ import React, {
   useContext,
   useState,
 } from 'react'
-import { KeyValuePairString } from "@/types/buckets";
-import { Count } from "@/types/buckets";
+import { Count, KeyValuePairString, KVCount } from "@/types/buckets";
 
 interface BucketContextProps {
   loading: boolean;
@@ -25,6 +24,8 @@ interface BucketContextProps {
   setResultsInput: React.Dispatch<React.SetStateAction<string>>;
   pageNumInput: string;
   setPageNumInput: React.Dispatch<React.SetStateAction<string>>;
+  kvs: KVCount | null;
+  setKvs: React.Dispatch<React.SetStateAction<KVCount | null>>;
 }
 
 const BucketContext = createContext<BucketContextProps | undefined>(undefined)
@@ -34,6 +35,7 @@ export const BucketProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedFile, setSelectedFile] = useState<string>("");
   const [selectedBucket, setSelectedBucket] = useState<string>("");
   const [pages, setPages] = useState<KeyValuePairString[]>([]);
+  const [kvs, setKvs] = useState<KVCount | null>(null);
   const [buckets, setBuckets] = useState<string[]>([]);
   const [count, setCount] = useState<Count>({ count: 0 });
   const [resultsInput, setResultsInput] = useState<string>("100");
@@ -58,6 +60,8 @@ export const BucketProvider = ({ children }: { children: React.ReactNode }) => {
         setResultsInput,
         pageNumInput,
         setPageNumInput,
+        kvs,
+        setKvs,
       }
     }>{children}</BucketContext.Provider>
   )
