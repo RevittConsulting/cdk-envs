@@ -6,8 +6,10 @@ import (
 	"net/http"
 )
 
+type Key string
+
 const (
-	BucketNameCTX = "bucketName"
+	BucketNameCTX Key = "bucketName"
 )
 
 var (
