@@ -7,7 +7,7 @@ import DataTable from "@/components/datacryp/data-table";
 export default function DatacrypPage() {
   return (
     <div className="flex flex-col items-center justify-center gap-4 flex-wrap w-full px-4 py-4">
-      {/* <DatacrypSearch /> */}
+      <DatacrypSearch />
       <DatacrypHeader />
       <DataTable />
     </div>

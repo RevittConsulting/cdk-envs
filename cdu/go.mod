@@ -6,7 +6,7 @@ require (
 	github.com/0xPolygonHermez/zkevm-data-streamer v0.2.0
 	github.com/RevittConsulting/logger v1.0.0
 	github.com/boltdb/bolt v1.3.1
-	github.com/erigontech/mdbx-go v0.37.1
+	github.com/erigontech/mdbx-go v0.27.14
 	github.com/ethereum/go-ethereum v1.13.14
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/go-chi/cors v1.2.1
